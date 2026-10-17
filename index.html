@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>SonKullan+</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🥬</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
@@ -87,44 +88,135 @@ pre{white-space:pre-wrap;word-break:break-word;font-size:12.5px;background:var(-
 .dipnot{font-size:13px;color:var(--mut);margin-top:16px}
 .dosya{display:none}
 @media (prefers-reduced-motion:no-preference){.urun{transition:background .2s}}
+header{align-items:flex-start}
+header h1{line-height:1.1}
+.dil{display:flex;border:1px solid var(--cizgi);border-radius:9px;overflow:hidden;flex-shrink:0}
+.dil button{border:0;border-radius:0;padding:6px 10px;font-size:14px;background:var(--kart);color:var(--mut)}
+.dil button[aria-pressed="true"]{background:var(--acc);color:var(--acc-ink);font-weight:500}
 </style>
 </head>
 <body>
 <div class="kap" id="app"></div>
 <nav id="nav"></nav>
 <script>
-/* ===================== AYARLAR VE REFERANS VERİ ===================== */
+/* ===================== DİL / LANGUAGE ===================== */
+let LANG = "tr";
+try{ const k=localStorage.getItem("sonkullan-lang"); LANG = k || ((navigator.language||"").toLowerCase().startsWith("tr") ? "tr" : "en"); }catch(e){}
+const TX = {
+ tr:{
+  slogan:"Önce bozulacak olanı kurtar", tabDolap:"Dolabım", tabEkle:"Ekle", tabKurtar:"Kurtar", tabLog:"Promptlar",
+  bos:"Dolabın boş", bosAlt:"Fiş veya ambalaj fotoğrafıyla, konuşarak ya da elle ürün ekleyerek başla.", urunEkle:"Ürün ekle", demoYukle:"Demo ürünlerini yükle", demoYeniden:"Demo ürünlerini yeniden yükle", dolapTemizle:"Dolabı temizle",
+  acil:n=>`Bugün ${n} ürün acil:`, kurtarBtn:"Elimdekileri Kurtar", ozK:"0–1 gün", ozS:"2–3 gün", ozY:"Daha uzun", ozG:"Kontrol",
+  dipDolap:k=>`“Etiket tarihi” ambalajdan okunan ve senin onayladığın tarihtir. “Tahmini” tarih, alış tarihine referans tablodaki süre eklenerek kodla hesaplanır; kesin değildir. Tablo değerleri şu an örnek değerdir (${k}).`,
+  kaynakNotu:"Örnek değer — kaynakla doğrulanmadı", etSTT:"Etiket tarihi · STT", etTETT:"Etiket tarihi · TETT", etTablo:"Tahmini · referans tablo", etYok:"Tarih yok", etDemo:"Demo verisi",
+  alis:"Alış", takip:"Takip", sttUyari:"Son tüketim tarihi geçmiş. Tarife dahil edilmez; tüketmeyin ve yerel atık kurallarına göre atın.",
+  kontrolEttim:"Koku, görünüm ve dokusunu kontrol ettim; yan malzeme olarak değerlendirilebilir", kontrolNot:"Duyusal kontrol bir güvenlik garantisi değildir. Şüphe duyuyorsan tüketme.",
+  kullandim:"Kullandım", sil:"Sil",
+  dOnay:"Onay bekliyor", dSureYok:"Süre bilgisi yok", dSTT:n=>`STT ${n} gün önce geçti — tüketmeyin`, dTETT:n=>`TETT ${n} gün önce geçti`, dTablo:n=>`Tahmini süre ${n} gün önce doldu`, dBugun:"Bugün", dYarin:"Yarın", dKalan:n=>`${n} gün kaldı`,
+  nOnay:"tarih doğrulanmadı", nSTT:"STT geçmiş", nKontrol:"tarihi geçmiş, kontrol edilmedi", nAlerjen:a=>"alerjen: "+a, nIst:"istenmiyor",
+  fotoBaslik:"Fotoğraftan ekle", fotoAlt:"Yapay zekâ fişi veya ambalajı okur, sen kontrol edip onaylarsın. Okuyamadığı bilgiyi boş bırakır.",
+  fotoIpucu:"İyi sonuç için tarih alanına yakından ve parlamasız çek; fişin tüm satırları kadrajda olsun. Fotoğraf okunmak üzere Google Gemini’ye gönderilir: fişte adın veya kart bilgilerin görünüyorsa o kısmı kapatarak çek.",
+  fis:"Market fişi", ambalaj:"Ambalaj / tarih", fisOkunuyor:"Fiş okunuyor (yapay zekâ)…", ambOkunuyor:"Ambalaj okunuyor (yapay zekâ)…",
+  gorselHata:m=>`Görsel okunamadı: ${m} Ürünleri elle ekleyebilirsiniz.`, gidaYok:"Görselde gıda ürünü bulunamadı. Daha yakından ve net bir fotoğraf deneyin ya da elle ekleyin.", gorselAcilmadi:"Görsel açılamadı. JPG veya PNG deneyin (HEIC desteklenmeyebilir).",
+  elleBaslik:"Elle ekle", urunAdi:"Ürün adı", urunOrnek:"ör. Ispanak", kategori:"Kategori", miktar:"Miktar", birim:"Birim", birimOrnek:"g, adet, demet", alisTarihi:"Alış tarihi", etiketTarihi:"Etiket tarihi", etiketTuru:"Etiket tarihi türü", etiketteki:"Etiketteki tarih",
+  turYok:"Yok / bilmiyorum", turSTT:"STT (son tüketim)", turTETT:"TETT (tavsiye edilen)", turYokKisa:"Yok",
+  elleIpucu:"Etiket tarihi yoksa ve kategori referans tabloda varsa tahmini takip tarihi hesaplanır.", dolabaEkle:"Dolaba ekle",
+  sesBaslik:"Konuşarak ekle", sesAlt:"Kutuya dokun, klavyendeki mikrofon simgesine bas ve dolaba ne koyduğunu anlat. Örneğin: “İki paket mantar aldım, dünden kalan yarım paket krema var.”", sesPh:"Konuş ya da yaz…", sesBtn:"Ürünlere çevir", sesCevriliyor:"Konuşma ürün listesine çevriliyor (yapay zekâ)…", sesBos:"Önce dolaba ne koyduğunu söyle ya da yaz.", sesHata:m=>"Konuşma çevrilemedi: "+m, sesGidaYok:"Konuşmada gıda ürünü bulunamadı.",
+  onayBaslik:"Okunan ürünleri kontrol et", onayAlt:"Düşük güvenli satırlar işaretli. Bilgileri düzelt ve “Doğruladım” kutusunu işaretle; doğrulanmadan dolaba eklenmez.", fisteki:"fişte:", dogruladim:"Bilgileri kontrol ettim, doğruladım", seciliEkle:"Seçilenleri dolaba ekle", vazgec:"Vazgeç",
+  aDogrula:a=>`“${a}” düşük güvenle okundu. Kontrol edip “Doğruladım” kutusunu işaretle ya da “Dolaba ekle” işaretini kaldır.`, aAdBos:"Ürün adı boş olamaz.", aTarihYok:a=>`“${a}” için STT/TETT seçildi ama tarih yok.`, aAdYaz:"Ürün adını yaz.", aSTTTarih:"STT veya TETT seçtiysen etiketteki tarihi de gir.",
+  nFisTarih:"Fiş tarihi okunamadı; bugün varsayıldı.", nKatBelirsiz:"Kategori belirsiz.", nPaketli:"Paketli ürün: etiket tarihini girin.", nTarihOkunamadi:"Tarih okunamadı; etiketten kontrol edip girin.", nAlisBelirsiz:"Alış zamanı belirsiz; bugün varsayıldı.", nAcik:"Açılmış ürün: tahmini süre kapalı ürüne göre hesaplanır, gerçek süre daha kısa olabilir.", nMiktarYok:"Miktar belirtilmedi.",
+  kBaslik:"Elimdekileri Kurtar", kAlt:"Bozulması en yakın ürünleri merkeze alan, birbirinden farklı üç tarif hazırlanır. Her tarif kod kontrolünden ve ayrı bir yapay zekâ denetiminden geçer.",
+  kisi:"Kaç kişi?", istenmeyen:"Bugün istemediklerin", istPh:"ör. mantar, acı", alerjenler:"Alerjenler (tariflerden ve türevlerinden çıkarılır)", kilerPorsiyon:"Kiler ve porsiyon ayarı", kilerEtiket:"Evde hep olan temel malzemeler (virgülle)",
+  carpan:c=>`Porsiyon çarpanı: ${c} (geri bildirimlerinle ayarlanır)`, sifirla:"Sıfırla", hazirlaniyor:"Tarifler hazırlanıyor…", kUrunYok:"Tarif için kullanılabilir ürün yok. Önce dolabına ürün ekle veya tarihi geçmiş ürünleri kontrol et.",
+  tur1:(t,n)=>`${t}. tur: ${n} tarif yazılıyor`, turKod:(t,n)=>`${t}. tur: kod kontrolü ${n} tarifte sorun buldu`, turDen:(t,n)=>`${t}. tur: yapay zekâ denetçisi ${n} tarifi kontrol ediyor`, turTekrar:n=>`${n} tarif sorunlu; bulunan sorunlar düzeltilerek yeniden yazılıyor`, tekrarHata:m=>"Yeniden deneme başarısız: "+m,
+  merkez:"Bu sefer merkeze alınanlar", acilYok:"(acil ürün yok; en yakın tarihli seçildi)", dahilDegil:n=>`Tariflere dahil edilmeyen ${n} ürün`, kisiKisa:"kişi", carpanKisa:"porsiyon çarpanı",
+  uretilemedi:"Bu yöntem için denetimden geçen bir tarif üretilemedi, bu yüzden gösterilmiyor.", neden:"Neden?",
+  dipTarif:"Tarifler yapay zekâ ile üretilir ve hata içerebilir. Tarih bir rehberdir; şüphe duyduğun ürünü tüketme. SonKullan+ profesyonel gıda güvenliği değerlendirmesinin yerini tutmaz.",
+  hazirlik:"Hazırlık", pisirme:"Pişirme", dk:"dk", kurtariliyor:"Kurtarılıyor:", nedenTarif:"Neden bu tarif?", dolabindan:"Dolabından", kilerden:"Kilerden", almaniz:"Almanız gerekebilir", yapilis:"Yapılışı",
+  denGecti:"Kod kontrolü ve yapay zekâ denetimi geçti", denDuzeltildi:d=>` (ilk denemedeki sorunlar düzeltildi, ${d}. deneme)`, denAyrinti:"Denetim ayrıntısı", ilkSorun:"İlk denemede bulunan sorunlar:",
+  pisirdim:"Bu tarifi pişirdim", porsiyon:"Porsiyon nasıldı?", tam:"Tam yetti", artti:"Arttı", yetmedi:"Yetmedi", dus:"Kullanılan ürünleri dolaptan düş", tesekkur:c=>`Teşekkürler. Sonraki tariflerde porsiyon çarpanı ${c} olarak kullanılacak.`, dusuldu:l=>`Dolaptan düşüldü: ${l}.`, eslesmeYok:"Eşleşen dolap ürünü bulunamadı.",
+  logBaslik:"Prompt günlüğü", logAlt:"Her yapay zekâ çağrısı amacı, tekniği, prompt metni ve gerçek çıktısıyla kaydedilir. Notlar alanına test sonucunu ve yaptığınız iyileştirmeyi yazın; rapor için dışa aktarın.", logJson:"JSON olarak göster", logTemizle:"Günlüğü temizle", sn:"sn", teknik:"Teknik:", sistem:"Sistem promptu", kullanici:"Kullanıcı promptu", cikti:"Model çıktısı", logNot:"Test notu ve iyileştirme", logBos:"Henüz çağrı yok. Fotoğraftan ekleme, konuşarak ekleme veya “Elimdekileri Kurtar” kullanıldığında burada görünür.",
+  cTemizle:"Dolaptaki tüm ürünler silinsin mi?", cLog:"Prompt günlüğü silinsin mi?", sunucu:s=>"Sunucu hatası "+s, kota:"Ücretsiz kullanım sınırına ulaşıldı. Bir dakika bekleyip tekrar deneyin.",
+  amFis:"Fişten ürün çıkarımı", amAmb:"Ambalajdan ürün ve tarih çıkarımı", amSes:"Konuşmadan ürün çıkarımı", amTarif:t=>`Tarif üretimi (${t}. tur)`, amDen:t=>`Tarif denetimi (${t}. tur)`,
+  vDolapYok:a=>`“${a}” dolap ürünü olarak gösterilmiş ama kullanılabilir ürünler arasında yok.`, vAlerjen:(k,a)=>`Alerjen ihlali: “${k}” (${a}).`, vIst:k=>`İstenmeyen malzeme kullanılmış: “${k}”.`, vDis:(a,n)=>`Dışarıda bırakılan ürün kullanılmış: “${a}” (${n}).`, vIddia:k=>`Gıda güvenliği iddiası içeriyor: “${k}”.`, vCapa:"Öncelikli ürünlerden hiçbiri kullanılmamış.", vFormat:"Çıktı beklenen JSON biçiminde değil.", denYanitYok:"Denetçi bu tarif için yanıt vermedi.", denOnaylamadi:"Denetçi tarifi onaylamadı.",
+  ozelTarih:"Tarih yok"
+ },
+ en:{
+  slogan:"Rescue what spoils first", tabDolap:"My fridge", tabEkle:"Add", tabKurtar:"Rescue", tabLog:"Prompts",
+  bos:"Your fridge is empty", bosAlt:"Start by adding items from a receipt or package photo, by speaking, or by hand.", urunEkle:"Add items", demoYukle:"Load demo items", demoYeniden:"Reload demo items", dolapTemizle:"Clear fridge",
+  acil:n=>`${n} item${n>1?"s":""} urgent today:`, kurtarBtn:"Rescue my food", ozK:"0–1 days", ozS:"2–3 days", ozY:"Longer", ozG:"Check",
+  dipDolap:k=>`A “label date” is read from the package and confirmed by you. An “estimated” date is calculated by code from the purchase date plus the reference table; it is not exact. Table values are currently sample values (${k}).`,
+  kaynakNotu:"Sample value — not verified against a source", etSTT:"Label date · use-by", etTETT:"Label date · best before", etTablo:"Estimated · reference table", etYok:"No date", etDemo:"Demo data",
+  alis:"Bought", takip:"Track until", sttUyari:"Use-by date has passed. It is excluded from recipes; do not eat it and dispose of it according to local waste rules.",
+  kontrolEttim:"I checked its smell, look and texture; it may be used as a side ingredient", kontrolNot:"A sensory check is not a safety guarantee. If in doubt, don’t eat it.",
+  kullandim:"Used it", sil:"Delete",
+  dOnay:"Awaiting confirmation", dSureYok:"No shelf-life info", dSTT:n=>`Use-by passed ${n} day${n>1?"s":""} ago — don’t eat`, dTETT:n=>`Best before passed ${n} day${n>1?"s":""} ago`, dTablo:n=>`Estimated time ended ${n} day${n>1?"s":""} ago`, dBugun:"Today", dYarin:"Tomorrow", dKalan:n=>`${n} days left`,
+  nOnay:"date not confirmed", nSTT:"use-by passed", nKontrol:"date passed, not checked", nAlerjen:a=>"allergen: "+a, nIst:"not wanted",
+  fotoBaslik:"Add from a photo", fotoAlt:"AI reads the receipt or package; you check and confirm. Anything it can’t read is left blank.",
+  fotoIpucu:"For best results, shoot the date up close without glare and keep every receipt line in frame. Photos are sent to Google Gemini to be read: cover your name or card details if they appear on the receipt.",
+  fis:"Receipt", ambalaj:"Package / date", fisOkunuyor:"Reading receipt (AI)…", ambOkunuyor:"Reading package (AI)…",
+  gorselHata:m=>`Couldn’t read the image: ${m} You can add items by hand.`, gidaYok:"No food items found in the image. Try a closer, sharper photo or add items by hand.", gorselAcilmadi:"Couldn’t open the image. Try JPG or PNG (HEIC may not be supported).",
+  elleBaslik:"Add by hand", urunAdi:"Item name", urunOrnek:"e.g. Spinach", kategori:"Category", miktar:"Quantity", birim:"Unit", birimOrnek:"g, pcs, bunch", alisTarihi:"Purchase date", etiketTarihi:"Label date", etiketTuru:"Label date type", etiketteki:"Date on the label",
+  turYok:"None / don’t know", turSTT:"Use-by", turTETT:"Best before", turYokKisa:"None",
+  elleIpucu:"If there’s no label date and the category is in the reference table, an estimated tracking date is calculated.", dolabaEkle:"Add to fridge",
+  sesBaslik:"Add by speaking", sesAlt:"Tap the box, press the microphone on your keyboard and say what you put in the fridge. For example: “I bought two packs of mushrooms, and there’s half a pack of cream left from yesterday.”", sesPh:"Speak or type…", sesBtn:"Turn into items", sesCevriliyor:"Turning speech into items (AI)…", sesBos:"First say or type what you put in the fridge.", sesHata:m=>"Couldn’t convert speech: "+m, sesGidaYok:"No food items found in what you said.",
+  onayBaslik:"Check the items that were read", onayAlt:"Low-confidence rows are highlighted. Fix the details and tick “I verified”; they can’t be added until verified.", fisteki:"on receipt:", dogruladim:"I checked and verified the details", seciliEkle:"Add selected to fridge", vazgec:"Cancel",
+  aDogrula:a=>`“${a}” was read with low confidence. Check it and tick “I verified”, or untick “Add to fridge”.`, aAdBos:"Item name can’t be empty.", aTarihYok:a=>`A label date type was chosen for “${a}” but there is no date.`, aAdYaz:"Enter an item name.", aSTTTarih:"If you chose use-by or best before, also enter the date on the label.",
+  nFisTarih:"Receipt date unreadable; today was assumed.", nKatBelirsiz:"Category unclear.", nPaketli:"Packaged item: enter the label date.", nTarihOkunamadi:"Date unreadable; check the label and enter it.", nAlisBelirsiz:"Purchase time unclear; today was assumed.", nAcik:"Opened item: the estimate is for unopened items; real time may be shorter.", nMiktarYok:"No quantity given.",
+  kBaslik:"Rescue my food", kAlt:"Three different recipes are built around the items closest to spoiling. Each recipe passes a code check and a separate AI audit.",
+  kisi:"How many people?", istenmeyen:"Not in the mood for", istPh:"e.g. mushrooms, spicy", alerjenler:"Allergens (removed from recipes, including derivatives)", kilerPorsiyon:"Pantry and portion settings", kilerEtiket:"Basics always at home (comma-separated)",
+  carpan:c=>`Portion multiplier: ${c} (adjusted by your feedback)`, sifirla:"Reset", hazirlaniyor:"Preparing recipes…", kUrunYok:"No usable items for a recipe. Add items to your fridge first or check expired ones.",
+  tur1:(t,n)=>`Round ${t}: writing ${n} recipe${n>1?"s":""}`, turKod:(t,n)=>`Round ${t}: code check found problems in ${n} recipe${n>1?"s":""}`, turDen:(t,n)=>`Round ${t}: AI auditor checking ${n} recipe${n>1?"s":""}`, turTekrar:n=>`${n} recipe${n>1?"s":""} had problems; rewriting with the problems fixed`, tekrarHata:m=>"Retry failed: "+m,
+  merkez:"Built around this time", acilYok:"(nothing urgent; the closest date was chosen)", dahilDegil:n=>`${n} item${n>1?"s":""} left out of recipes`, kisiKisa:"people", carpanKisa:"portion multiplier",
+  uretilemedi:"No recipe passed the audit for this method, so none is shown.", neden:"Why?",
+  dipTarif:"Recipes are generated by AI and may contain mistakes. Dates are a guide; don’t eat anything you’re unsure about. SonKullan+ does not replace a professional food-safety assessment.",
+  hazirlik:"Prep", pisirme:"Cook", dk:"min", kurtariliyor:"Rescuing:", nedenTarif:"Why this recipe?", dolabindan:"From your fridge", kilerden:"From the pantry", almaniz:"You may need to buy", yapilis:"Method",
+  denGecti:"Passed the code check and AI audit", denDuzeltildi:d=>` (problems from the first attempt were fixed, attempt ${d})`, denAyrinti:"Audit details", ilkSorun:"Problems found in the first attempt:",
+  pisirdim:"I cooked this", porsiyon:"How were the portions?", tam:"Just right", artti:"Leftovers", yetmedi:"Not enough", dus:"Remove used items from fridge", tesekkur:c=>`Thanks. The next recipes will use a portion multiplier of ${c}.`, dusuldu:l=>`Removed from fridge: ${l}.`, eslesmeYok:"No matching fridge items found.",
+  logBaslik:"Prompt log", logAlt:"Every AI call is logged with its purpose, technique, prompt text and actual output. Write test results and improvements in the notes; export them for the report.", logJson:"Show as JSON", logTemizle:"Clear log", sn:"s", teknik:"Technique:", sistem:"System prompt", kullanici:"User prompt", cikti:"Model output", logNot:"Test note and improvement", logBos:"No calls yet. They appear here when you add from a photo, add by speaking or use “Rescue my food”.",
+  cTemizle:"Delete all items in the fridge?", cLog:"Delete the prompt log?", sunucu:s=>"Server error "+s, kota:"Free usage limit reached. Wait a minute and try again.",
+  amFis:"Item extraction from receipt", amAmb:"Item and date extraction from package", amSes:"Item extraction from speech", amTarif:t=>`Recipe generation (round ${t})`, amDen:t=>`Recipe audit (round ${t})`,
+  vDolapYok:a=>`“${a}” is marked as a fridge item but isn’t among the usable items.`, vAlerjen:(k,a)=>`Allergen violation: “${k}” (${a}).`, vIst:k=>`Unwanted ingredient used: “${k}”.`, vDis:(a,n)=>`Excluded item used: “${a}” (${n}).`, vIddia:k=>`Contains a food-safety claim: “${k}”.`, vCapa:"None of the priority items was used.", vFormat:"Output is not in the expected JSON format.", denYanitYok:"The auditor gave no answer for this recipe.", denOnaylamadi:"The auditor did not approve the recipe.",
+  ozelTarih:"No date"
+ }
+};
+function t(k,...a){ const v = TX[LANG][k] ?? TX.tr[k]; return typeof v==="function" ? v(...a) : v; }
+const dilAdi = () => LANG==="en" ? "İngilizce" : "Türkçe";
+const yerel = () => LANG==="en" ? "en-GB" : "tr-TR";
 
-/* Raf ömrü referans tablosu (gün, buzdolabı/uygun saklama varsayımıyla).
-   DOĞRULANMALI: Bu değerler örnek/yer tutucu değerlerdir. Rapordan önce
-   resmi bir gıda güvenliği kaynağıyla değiştirilmeli ve kaynak yazılmalıdır.
-   gun:null olan kategoriler için tahmin YAPILMAZ; etiket tarihi gerekir. */
-const KAYNAK_NOTU = "Örnek değer — kaynakla doğrulanmadı";
+/* ===================== REFERANS VERİ ===================== */
+/* Raf ömrü referans tablosu (gün). DOĞRULANMALI: örnek/yer tutucu değerlerdir; rapordan önce
+   resmi bir gıda güvenliği kaynağıyla değiştirilmeli. gun:null → tahmin yapılmaz, etiket gerekir. */
 const KAT = {
-  tavuk:{ad:"Tavuk (çiğ)",gun:1}, kirmizi_et:{ad:"Kırmızı et (çiğ)",gun:2}, kiyma:{ad:"Kıyma",gun:1},
-  balik:{ad:"Balık / deniz ürünü (çiğ)",gun:1,alerjen:["balik"]},
-  yesil_yaprak:{ad:"Yeşil yapraklı sebze",gun:3}, domates:{ad:"Domates",gun:4},
-  kabak_patlican:{ad:"Kabak / patlıcan",gun:4}, biber:{ad:"Biber",gun:5}, mantar:{ad:"Mantar",gun:3},
-  kok_sebze:{ad:"Havuç, patates, soğan vb.",gun:14}, yumusak_meyve:{ad:"Yumuşak meyve",gun:3},
-  sert_meyve:{ad:"Sert meyve (elma, armut…)",gun:14}, muz:{ad:"Muz",gun:4},
-  ekmek:{ad:"Ekmek / unlu mamul",gun:3,alerjen:["gluten"]}, pismis_yemek:{ad:"Pişmiş yemek / artık",gun:3},
-  sut_urunu:{ad:"Süt ürünü",gun:null,alerjen:["sut"]}, yumurta:{ad:"Yumurta",gun:null,alerjen:["yumurta"]},
-  sarkuteri:{ad:"Şarküteri",gun:null}, kuru_gida:{ad:"Kuru gıda (makarna, bakliyat…)",gun:null},
-  konserve:{ad:"Konserve / kavanoz",gun:null}, dondurulmus:{ad:"Dondurulmuş",gun:null}, diger:{ad:"Diğer",gun:null}
+  tavuk:{ad:["Tavuk (çiğ)","Chicken (raw)"],gun:1}, kirmizi_et:{ad:["Kırmızı et (çiğ)","Red meat (raw)"],gun:2}, kiyma:{ad:["Kıyma","Minced meat"],gun:1},
+  balik:{ad:["Balık / deniz ürünü (çiğ)","Fish / seafood (raw)"],gun:1,alerjen:["balik"]},
+  yesil_yaprak:{ad:["Yeşil yapraklı sebze","Leafy greens"],gun:3}, domates:{ad:["Domates","Tomatoes"],gun:4},
+  kabak_patlican:{ad:["Kabak / patlıcan","Zucchini / eggplant"],gun:4}, biber:{ad:["Biber","Peppers"],gun:5}, mantar:{ad:["Mantar","Mushrooms"],gun:3},
+  kok_sebze:{ad:["Havuç, patates, soğan vb.","Carrots, potatoes, onions etc."],gun:14}, yumusak_meyve:{ad:["Yumuşak meyve","Soft fruit"],gun:3},
+  sert_meyve:{ad:["Sert meyve (elma, armut…)","Firm fruit (apples, pears…)"],gun:14}, muz:{ad:["Muz","Bananas"],gun:4},
+  ekmek:{ad:["Ekmek / unlu mamul","Bread / bakery"],gun:3,alerjen:["gluten"]}, pismis_yemek:{ad:["Pişmiş yemek / artık","Cooked food / leftovers"],gun:3},
+  sut_urunu:{ad:["Süt ürünü","Dairy"],gun:null,alerjen:["sut"]}, yumurta:{ad:["Yumurta","Eggs"],gun:null,alerjen:["yumurta"]},
+  sarkuteri:{ad:["Şarküteri","Deli meats"],gun:null}, kuru_gida:{ad:["Kuru gıda (makarna, bakliyat…)","Dry goods (pasta, pulses…)"],gun:null},
+  konserve:{ad:["Konserve / kavanoz","Canned / jarred"],gun:null}, dondurulmus:{ad:["Dondurulmuş","Frozen"],gun:null}, diger:{ad:["Diğer","Other"],gun:null}
 };
+const katAd = k => (KAT[k]?.ad || [k,k])[LANG==="en"?1:0];
+/* "$" ile biten kelime yalnızca tam kelime olarak aranır (ör. "un$" → "until" eşleşmez). */
 const ALERJEN = {
-  sut:{ad:"Süt",kelimeler:["süt","yoğurt","peynir","kaşar","tereyağ","krema","kaymak","labne","lor","ayran","beşamel","mozzarella","parmesan","süzme"]},
-  yumurta:{ad:"Yumurta",kelimeler:["yumurta","mayonez"]},
-  gluten:{ad:"Gluten",kelimeler:["un","unu","ekmek","makarna","bulgur","irmik","şehriye","yufka","galeta","buğday","arpa","çavdar","lavaş","erişte","kuskus","bazlama"]},
-  yer_fistigi:{ad:"Yer fıstığı",kelimeler:["yer fıstığı","fıstık ezmesi"]},
-  kabuklu_yemis:{ad:"Kabuklu yemiş",kelimeler:["ceviz","fındık","badem","kaju","antep fıstığı"]},
-  soya:{ad:"Soya",kelimeler:["soya"]},
-  balik:{ad:"Balık",kelimeler:["balık","ton balığı","somon","hamsi","levrek","çipura","sardalya","uskumru"]},
-  kabuklu_deniz:{ad:"Kabuklu deniz ürünü",kelimeler:["karides","midye","kalamar","ahtapot","yengeç"]},
-  susam:{ad:"Susam",kelimeler:["susam","tahin"]}
+  sut:{ad:["Süt","Milk"],kelimeler:["süt","yoğurt","peynir","kaşar","tereyağ","krema","kaymak","labne","lor$","ayran","beşamel","mozzarella","parmesan","süzme","milk","yogurt","yoghurt","cheese","butter","cream","ghee","whey","feta","béchamel","bechamel"]},
+  yumurta:{ad:["Yumurta","Egg"],kelimeler:["yumurta","mayonez","egg","mayonnaise","mayo$"]},
+  gluten:{ad:["Gluten","Gluten"],kelimeler:["un$","unu$","unlu","ekmek","makarna","bulgur","irmik","şehriye","yufka","galeta","buğday","arpa$","çavdar","lavaş","erişte","kuskus","bazlama","flour","bread","pasta","noodle","semolina","couscous","wheat","barley","rye$","breadcrumb","tortilla","phyllo","spaghetti","penne","macaroni"]},
+  yer_fistigi:{ad:["Yer fıstığı","Peanut"],kelimeler:["yer fıstığı","fıstık ezmesi","peanut"]},
+  kabuklu_yemis:{ad:["Kabuklu yemiş","Tree nuts"],kelimeler:["ceviz","fındık","badem","kaju","antep fıstığı","walnut","hazelnut","almond","cashew","pistachio","pecan"]},
+  soya:{ad:["Soya","Soy"],kelimeler:["soya","soy$","tofu"]},
+  balik:{ad:["Balık","Fish"],kelimeler:["balık","ton balığı","somon","hamsi","levrek","çipura","sardalya","uskumru","fish","tuna","salmon","anchovy","sardine","mackerel","cod$"]},
+  kabuklu_deniz:{ad:["Kabuklu deniz ürünü","Shellfish"],kelimeler:["karides","midye","kalamar","ahtapot","yengeç","shrimp","prawn","mussel","squid","octopus","crab","lobster"]},
+  susam:{ad:["Susam","Sesame"],kelimeler:["susam","tahin","sesame","tahini"]}
 };
-const YASAK_IFADE = ["güvenlidir","güvenle tüket","sorun olmaz","bozulmamıştır","zararsızdır","tüketilebilir durumda"];
-const YONTEMLER = ["Tavada / sote","Çorba veya tencere yemeği","Fırında"];
+const alerjenAd = a => ALERJEN[a].ad[LANG==="en"?1:0];
+const ALERJEN_ISTISNA = ["eggplant","eggplants","butternut","cream of tartar"];
+const YASAK_IFADE = ["güvenlidir","güvenle tüket","sorun olmaz","bozulmamıştır","zararsızdır","tüketilebilir durumda","is safe","safe to eat","safe to consume","not spoiled","harmless","still good to eat"];
+const YONTEMLER = { tr:["Tavada / sote","Çorba veya tencere yemeği","Fırında"], en:["Pan / sauté","Soup or stew","Oven-baked"] };
+const KILER_VARSAYILAN = { tr:"tuz, karabiber, pul biber, sıvı yağ, zeytinyağı, su, salça", en:"salt, black pepper, chili flakes, vegetable oil, olive oil, water, tomato paste" };
 
 /* ===================== YARDIMCILAR ===================== */
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -134,55 +226,59 @@ function ymd(d){const z=n=>String(n).padStart(2,"0");return d.getFullYear()+"-"+
 const bugun = () => ymd(new Date());
 function gunEkle(s,n){const [y,m,d]=s.split("-").map(Number);return ymd(new Date(y,m-1,d+n));}
 function gunFarki(s){if(!s)return null;const [y,m,d]=s.split("-").map(Number);const b=new Date();b.setHours(0,0,0,0);return Math.round((new Date(y,m-1,d)-b)/86400000);}
-const trTarih = s => { if(!s) return "—"; const [y,m,d]=s.split("-"); return `${d}.${m}.${y}`; };
+const gTarih = s => { if(!s) return "—"; const [y,m,d]=s.split("-"); return LANG==="en" ? `${d}/${m}/${y}` : `${d}.${m}.${y}`; };
 const okTarih = s => /^\d{4}-\d{2}-\d{2}$/.test(s||"") ? s : null;
 const reEsc = s => s.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
-function kelimeVar(metin,k){ if(!k) return false; return new RegExp("(^|[^a-zçğıöşü0-9])"+reEsc(norm(k)),"u").test(norm(metin)); }
-function benzer(a,b){ a=norm(a); b=norm(b); if(!a||!b) return false; if(a.includes(b)||b.includes(a)) return true; return a.split(/\s+/)[0]===b.split(/\s+/)[0] && a.split(/\s+/)[0].length>3; }
-function parseJSON(t){
-  let s=String(t||"").replace(/```json|```/g,"").trim();
-  const i=s.search(/[\[{]/); if(i<0) throw new Error("Yanıtta JSON bulunamadı");
-  const kapanis = s[i]==="{" ? "}" : "]"; const j=s.lastIndexOf(kapanis);
-  return JSON.parse(s.slice(i,j+1));
+const HARF = "a-zçğıöşüâîûéè0-9";
+function kelimeVar(metin,k){
+  if(!k) return false; let tam=false; k=norm(k); if(k.endsWith("$")){ tam=true; k=k.slice(0,-1); }
+  let m = norm(metin); ALERJEN_ISTISNA.forEach(x=>{ m = m.split(x).join(" "); });
+  return new RegExp("(^|[^"+HARF+"])"+reEsc(k)+(tam?"($|[^"+HARF+"])":""),"u").test(m);
+}
+const temizK = k => k.replace(/\$$/,"");
+function benzer(a,b){ a=norm(a); b=norm(b); if(!a||!b) return false; if(a.includes(b)||b.includes(a)) return true; const x=a.split(/\s+/)[0]; return x===b.split(/\s+/)[0] && x.length>3; }
+function parseJSON(tx){
+  let s=String(tx||"").replace(/```json|```/g,"").trim();
+  const i=s.search(/[\[{]/); if(i<0) throw new Error("JSON?");
+  const j=s.lastIndexOf(s[i]==="{"?"}":"]"); return JSON.parse(s.slice(i,j+1));
 }
 
-/* ===================== DURUM (STATE) ===================== */
-let S = { items:[], bekleyen:[], hane:{kisi:2,alerjenler:[],kiler:"tuz, karabiber, pul biber, sıvı yağ, zeytinyağı, su, salça",carpan:1}, geri:[], log:[], sonKurtar:null };
-const UI = { tab:"dolap", sesMetin:"", ekleDurum:"", ekleHata:"", kurtarCalisiyor:false, ilerleme:[], kurtarHata:"", depoUyari:false, pisirilen:{} };
-
-async function yukle(){
-  try{
-    const v = localStorage.getItem("sonkullan-v1"); if(v) S = {...S, ...JSON.parse(v)};
-  }catch(e){ /* anahtar yok: ilk açılış */ }
-  render();
+/* ===================== DURUM ===================== */
+let S = { items:[], bekleyen:[], hane:{kisi:2,alerjenler:[],kiler:KILER_VARSAYILAN[LANG],carpan:1}, geri:[], log:[], sonKurtar:null };
+const UI = { tab:"dolap", sesMetin:"", ekleDurum:"", ekleHata:"", kurtarCalisiyor:false, ilerleme:[], kurtarHata:"", pisirilen:{} };
+function yukle(){ try{ const v=localStorage.getItem("sonkullan-v1"); if(v) S={...S,...JSON.parse(v)}; }catch(e){} render(); }
+let kayitZ; function kaydet(){ clearTimeout(kayitZ); kayitZ=setTimeout(()=>{ try{ localStorage.setItem("sonkullan-v1", JSON.stringify(S)); }catch(e){} },250); }
+function dilDegistir(l){
+  if(S.hane.kiler===KILER_VARSAYILAN[LANG]) S.hane.kiler = KILER_VARSAYILAN[l];
+  LANG=l; try{ localStorage.setItem("sonkullan-lang",l); }catch(e){}
+  document.documentElement.lang=l; kaydet(); render();
 }
-let kayitZ; function kaydet(){ clearTimeout(kayitZ); kayitZ=setTimeout(async()=>{ try{ localStorage.setItem("sonkullan-v1", JSON.stringify(S)); }catch(e){ console.warn("Kayıt hatası", e); } }, 250); }
 
-/* ===================== KURALLAR (KODDA, MODELDE DEĞİL) ===================== */
+/* ===================== KURALLAR (KODDA) ===================== */
 function durum(it){
-  if(!it.onayli) return {renk:"gri",etiket:"Onay bekliyor",uygun:false,neden:"tarih doğrulanmadı"};
+  if(!it.onayli) return {renk:"gri",etiket:t("dOnay"),uygun:false,neden:t("nOnay")};
   const d = gunFarki(it.tarih);
-  if(d===null) return {renk:"belirsiz",etiket:"Süre bilgisi yok",uygun:true,yan:true,d:null};
+  if(d===null) return {renk:"belirsiz",etiket:t("dSureYok"),uygun:true,yan:true,d:null};
   if(d<0){
-    if(it.tur==="STT") return {renk:"gri",etiket:`STT ${-d} gün önce geçti — tüketmeyin`,uygun:false,neden:"STT geçmiş",d};
-    const et = it.tur==="TETT" ? `TETT ${-d} gün önce geçti` : `Tahmini süre ${-d} gün önce doldu`;
+    if(it.tur==="STT") return {renk:"gri",etiket:t("dSTT",-d),uygun:false,neden:t("nSTT"),d};
+    const et = it.tur==="TETT" ? t("dTETT",-d) : t("dTablo",-d);
     if(it.kontrol) return {renk:"gri",etiket:et,uygun:true,yan:true,d,kontrolSor:true};
-    return {renk:"gri",etiket:et,uygun:false,neden:"tarihi geçmiş, kontrol edilmedi",d,kontrolSor:true};
+    return {renk:"gri",etiket:et,uygun:false,neden:t("nKontrol"),d,kontrolSor:true};
   }
-  if(d<=1) return {renk:"kirmizi",etiket:d===0?"Bugün":"Yarın",uygun:true,d};
-  if(d<=3) return {renk:"sari",etiket:`${d} gün kaldı`,uygun:true,d};
-  return {renk:"yesil",etiket:`${d} gün kaldı`,uygun:true,d};
+  if(d<=1) return {renk:"kirmizi",etiket:d===0?t("dBugun"):t("dYarin"),uygun:true,d};
+  if(d<=3) return {renk:"sari",etiket:t("dKalan",d),uygun:true,d};
+  return {renk:"yesil",etiket:t("dKalan",d),uygun:true,d};
 }
 function kaynakEtiketi(it){
-  if(it.tur==="STT") return `<span class="etiket kesin">Etiket tarihi · STT</span>`;
-  if(it.tur==="TETT") return `<span class="etiket kesin">Etiket tarihi · TETT</span>`;
-  if(it.tur==="TABLO") return `<span class="etiket" title="${esc(KAYNAK_NOTU)}">Tahmini · referans tablo</span>`;
-  return `<span class="etiket">Tarih yok</span>`;
+  if(it.tur==="STT") return `<span class="etiket kesin">${t("etSTT")}</span>`;
+  if(it.tur==="TETT") return `<span class="etiket kesin">${t("etTETT")}</span>`;
+  if(it.tur==="TABLO") return `<span class="etiket" title="${esc(t("kaynakNotu"))}">${t("etTablo")}</span>`;
+  return `<span class="etiket">${t("etYok")}</span>`;
 }
 function urunAlerjen(it, alerjenler){
   for(const a of alerjenler){
-    if((KAT[it.kategori]?.alerjen||[]).includes(a)) return ALERJEN[a].ad;
-    if(ALERJEN[a].kelimeler.some(k=>kelimeVar(it.ad,k))) return ALERJEN[a].ad;
+    if((KAT[it.kategori]?.alerjen||[]).includes(a)) return alerjenAd(a);
+    if(ALERJEN[a].kelimeler.some(k=>kelimeVar(it.ad,k))) return alerjenAd(a);
   }
   return null;
 }
@@ -192,15 +288,11 @@ function kalemOlustur(d){
   else if(KAT[d.kategori] && KAT[d.kategori].gun!=null && okTarih(d.alis)){ tarih=gunEkle(d.alis,KAT[d.kategori].gun); tur="TABLO"; }
   return {id:uid(),ad:String(d.ad).trim(),kategori:d.kategori,miktar:d.miktar??"",birim:d.birim||"",alis:d.alis||bugun(),tarih,tur,onayli:true,kontrol:false,demo:!!d.demo,durum:"aktif",giris:d.giris||"manuel"};
 }
-function aktifUrunler(){ return S.items.filter(i=>i.durum!=="kullanildi"); }
-function sirali(){ return aktifUrunler().map(i=>({i,du:durum(i)})).sort((a,b)=>{
-  const sira={kirmizi:0,sari:1,yesil:2,belirsiz:3,gri:4};
-  return (sira[a.du.renk]-sira[b.du.renk]) || ((a.du.d??9999)-(b.du.d??9999)); }); }
+const aktifUrunler = () => S.items.filter(i=>i.durum!=="kullanildi");
+function sirali(){ const sira={kirmizi:0,sari:1,yesil:2,belirsiz:3,gri:4};
+  return aktifUrunler().map(i=>({i,du:durum(i)})).sort((a,b)=>(sira[a.du.renk]-sira[b.du.renk])||((a.du.d??9999)-(b.du.d??9999))); }
 
-/* ===================== MODEL ÇAĞRISI + PROMPT GÜNLÜĞÜ ===================== */
-/* Yapay zekâ çağrısı: sayfa kendi sunucusundaki /api/ai uç noktasına gider.
-   API anahtarı yalnızca sunucuda (Vercel ortam değişkeni) durur; tarayıcıya hiç gelmez. */
-let yzDurum = "hazir";
+/* ===================== YAPAY ZEKÂ ÇAĞRISI ===================== */
 function resimOku(file){
   return new Promise((res,rej)=>{
     const img=new Image(), url=URL.createObjectURL(file);
@@ -208,7 +300,7 @@ function resimOku(file){
       const c=document.createElement("canvas"); c.width=Math.round(img.width*s); c.height=Math.round(img.height*s);
       c.getContext("2d").drawImage(img,0,0,c.width,c.height); URL.revokeObjectURL(url);
       res(c.toDataURL("image/jpeg",0.85).split(",")[1]); };
-    img.onerror=()=>rej(new Error("Görsel açılamadı. JPG veya PNG deneyin (HEIC desteklenmeyebilir)."));
+    img.onerror=()=>rej(new Error(t("gorselAcilmadi")));
     img.src=url;
   });
 }
@@ -218,18 +310,19 @@ async function callAI({amac,teknik,system,content,images}){
     const image = images ? {mime:"image/jpeg", data: await resimOku(images)} : null;
     const r = await fetch("/api/ai",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({system,prompt:content,image})});
     const d = await r.json().catch(()=>({}));
-    if(!r.ok) throw new Error(d.error || ("Sunucu hatası " + r.status));
+    if(!r.ok) throw new Error(r.status===429 ? t("kota") : (d.error || t("sunucu",r.status)));
     metin = d.text || "";
   }catch(e){ hata = e.message || String(e); }
-  S.log.unshift({id:uid(),zaman:new Date().toLocaleString("tr-TR"),amac,teknik,system,prompt:content+(images?"\n\n[fotoğraf eklendi]":""),cikti:hata?("HATA: "+hata):metin,sure:((Date.now()-t0)/1000).toFixed(1),not:""});
+  S.log.unshift({id:uid(),zaman:new Date().toLocaleString(yerel()),amac,teknik,system,prompt:content+(images?"\n\n[+ photo]":""),cikti:hata?("ERROR: "+hata):metin,sure:((Date.now()-t0)/1000).toFixed(1),not:""});
   S.log = S.log.slice(0,40); kaydet();
   if(hata) throw new Error(hata);
   return metin;
 }
 
 /* ===================== PROMPTLAR ===================== */
-const SYS_CIKARIM = "Sen SonKullan+ uygulamasının gıda etiketi ve market fişi okuma asistanısın. Yalnızca görselde GÖRDÜĞÜN bilgiyi yazarsın; okuyamadığın hiçbir tarihi, miktarı veya ürünü tahmin etmez, uydurmazsın. Yalnızca geçerli JSON döndürürsün, başka metin yazmazsın.";
+const SYS_CIKARIM = "Sen SonKullan+ uygulamasının gıda etiketi ve market fişi okuma asistanısın. Yalnızca görselde veya metinde GÖRDÜĞÜN bilgiyi yazarsın; okuyamadığın hiçbir tarihi, miktarı veya ürünü tahmin etmez, uydurmazsın. Yalnızca geçerli JSON döndürürsün, başka metin yazmazsın.";
 const katListesi = () => Object.keys(KAT).join(", ");
+const dilSatiri = () => `ÇIKTI DİLİ: JSON anahtarlarını ve kategori kodlarını değiştirme; ürün adlarını ve diğer metin alanlarını ${dilAdi()} yaz.`;
 
 function FIS_PROMPT(){ return `Bu bir market fişi fotoğrafı. Görevin:
 1. Fiş tarihini bul ve YYYY-AA-GG biçiminde yaz. Bulamazsan null yaz.
@@ -238,6 +331,7 @@ function FIS_PROMPT(){ return `Bu bir market fişi fotoğrafı. Görevin:
    Uygun kategori yoksa "diger" yaz. Yeni kategori uydurma.
 4. Miktar ve birim fişte yazıyorsa al; yazmıyorsa null.
 5. Kısaltmadan ürünü emin olarak anlayamıyorsan guven="dusuk" yaz.
+${dilSatiri()} "fis_metni" alanı fişte yazdığı gibi kalsın.
 
 Örnekler (fiş satırı → çıktı):
 "DOM.SALKIM 0,850 KG" → {"fis_metni":"DOM.SALKIM 0,850 KG","urun":"Salkım domates","kategori":"domates","miktar":0.85,"birim":"kg","guven":"yuksek"}
@@ -251,9 +345,10 @@ function FIS_PROMPT(){ return `Bu bir market fişi fotoğrafı. Görevin:
 function AMBALAJ_PROMPT(){ return `Bu bir veya birkaç gıda ambalajının fotoğrafı. Her ürün için:
 1. Ürün adını yaz.
 2. Görünen tarihi YYYY-AA-GG biçiminde yaz. Gün yoksa (yalnızca ay/yıl) ayın son gününü yaz ve guven="dusuk" ver.
-3. Tarih türünü belirle: "Son Tüketim Tarihi" / "SKT" / "STT" → "STT"; "Tavsiye Edilen Tüketim Tarihi" / "TETT" → "TETT"; tür yazmıyorsa veya tarih okunamıyorsa "okunamadi".
+3. Tarih türünü belirle: "Son Tüketim Tarihi" / "SKT" / "STT" / "Use by" → "STT"; "Tavsiye Edilen Tüketim Tarihi" / "TETT" / "Best before" → "TETT"; tür yazmıyorsa veya tarih okunamıyorsa "okunamadi".
 4. Tarih kısmen görünüyor, bulanık veya parlama varsa tarih=null, guven="dusuk" yaz; tahmin etme.
 5. Kategoriyi şu listeden seç: ${katListesi()}.
+${dilSatiri()}
 
 Örnekler:
 Net yoğurt kapağı "STT: 19.10.2026" → {"urun":"Yoğurt","kategori":"sut_urunu","tarih":"2026-10-19","tarih_turu":"STT","guven":"yuksek","not":""}
@@ -263,8 +358,27 @@ Süt kutusu, tarih alanı bulanık → {"urun":"Süt","kategori":"sut_urunu","ta
 Çıktı biçimi (yalnızca bu JSON):
 {"urunler":[{"urun":"","kategori":"","tarih":null,"tarih_turu":"STT|TETT|okunamadi","guven":"yuksek|dusuk","not":""}]}`; }
 
-const SYS_TARIF = "Sen SonKullan+ uygulamasının mutfak asistanısın. Görevin, bozulma önceliği yüksek ürünleri israf etmeden değerlendiren, ev mutfağında uygulanabilir tarifler yazmak. Gıda güvenliği hakkında hüküm vermezsin; hiçbir ürünün güvenli olduğunu söylemezsin. Evde olmayan malzemeyi varmış gibi göstermezsin. Yalnızca geçerli JSON döndürürsün.";
+function SES_PROMPT(metin){ const b=bugun(), d=gunEkle(b,-1); return `Kullanıcı buzdolabına ne koyduğunu konuşarak anlattı; konuşma telefonun diktesiyle metne çevrildi, yazım hataları olabilir. Konuşma Türkçe veya İngilizce olabilir. Bugünün tarihi: ${b}.
+Konuşmayı envanter kayıtlarına çevir. Kurallar:
+- "bugün", "dün", "iki gün önce" (veya "today", "yesterday") gibi ifadeleri YYYY-AA-GG alış tarihine çevir. İfade belirsizse ("geçenlerde") alis_tarihi=null ve guven="dusuk" yaz.
+- "kalan", "açtım", "yarım" (veya "left over", "opened", "half") geçiyorsa acilmis=true yaz.
+- Miktar belirsizse ("biraz", "some") miktar=null yaz; sayı uydurma.
+- Konuşmada son tüketim tarihi açıkça söylenmişse tarih alanına yaz ve türünü belirt; söylenmemişse tarih=null.
+- Gıda dışı şeyleri atla. Kategoriyi şu listeden seç: ${katListesi()}.
+${dilSatiri()}
 
+Örnek: "2 paket mantar aldım, dolapta dünden kalan yarım paket krema var"
+→ {"urunler":[{"urun":"Mantar","kategori":"mantar","miktar":2,"birim":"paket","alis_tarihi":"${b}","acilmis":false,"tarih":null,"tarih_turu":"yok","guven":"yuksek"},{"urun":"Krema","kategori":"sut_urunu","miktar":0.5,"birim":"paket","alis_tarihi":"${d}","acilmis":true,"tarih":null,"tarih_turu":"yok","guven":"yuksek"}]}
+Örnek: "geçenlerde biraz peynir almıştım"
+→ {"urunler":[{"urun":"Peynir","kategori":"sut_urunu","miktar":null,"birim":null,"alis_tarihi":null,"acilmis":false,"tarih":null,"tarih_turu":"yok","guven":"dusuk"}]}
+
+KONUŞMA METNİ:
+"""${metin}"""
+
+ÇIKTI (yalnızca bu JSON):
+{"urunler":[{"urun":"","kategori":"","miktar":null,"birim":null,"alis_tarihi":null,"acilmis":false,"tarih":null,"tarih_turu":"STT|TETT|yok","guven":"yuksek|dusuk"}]}`; }
+
+const SYS_TARIF = "Sen SonKullan+ uygulamasının mutfak asistanısın. Görevin, bozulma önceliği yüksek ürünleri israf etmeden değerlendiren, ev mutfağında uygulanabilir tarifler yazmak. Gıda güvenliği hakkında hüküm vermezsin; hiçbir ürünün güvenli olduğunu söylemezsin. Evde olmayan malzemeyi varmış gibi göstermezsin. Yalnızca geçerli JSON döndürürsün.";
 function tarifPrompt(yontemler, c, geriMap){
   const satir = i => `- ${i.ad}${i.miktar?` (${i.miktar} ${i.birim||""})`:""} — ${i._d.d==null?"tarih bilinmiyor":i._d.d<0?"tarihi geçmiş, kullanıcı duyusal kontrol yaptığını belirtti":`${i._d.d} gün kaldı`}`;
   return `GÖREV: Aşağıdaki yöntemlerin HER BİRİ için 1 tarif yaz (toplam ${yontemler.length} tarif, bu sırayla): ${yontemler.map((y,i)=>`${i+1}) ${y}`).join("  ")}
@@ -279,15 +393,16 @@ ${c.yan.map(satir).join("\n") || "- yok"}
 KİLER (evde var sayılan temel malzemeler): ${c.kiler.join(", ") || "yok"}
 KİŞİ SAYISI: ${c.kisi}
 PORSİYON ÇARPANI: ${c.carpan} (kişi başı miktarları standart tarifin bu katı olarak hesapla)
-KESİNLİKLE KULLANILMAYACAKLAR (alerjen ve türevleri): ${c.alerjenler.map(a=>ALERJEN[a].ad+" ("+ALERJEN[a].kelimeler.join(", ")+")").join("; ") || "yok"}
+KESİNLİKLE KULLANILMAYACAKLAR (alerjen ve türevleri): ${c.alerjenler.map(a=>ALERJEN[a].ad[0]+" ("+ALERJEN[a].kelimeler.map(temizK).join(", ")+")").join("; ") || "yok"}
 KULLANICININ İSTEMEDİKLERİ: ${c.ist.join(", ") || "yok"}
 
 KURALLAR:
-1. "kaynak":"dolap" yalnızca yukarıdaki iki ürün listesindeki ürünler için kullanılır.
-2. "kaynak":"kiler" yalnızca kiler listesindekiler için kullanılır.
+1. "kaynak":"dolap" yalnızca yukarıdaki iki ürün listesindeki ürünler için kullanılır ve bu malzemelerin adı listede yazıldığı gibi AYNEN yazılır (çevirme, değiştirme).
+2. "kaynak":"kiler" yalnızca kiler listesindekiler için kullanılır ve adı listede yazıldığı gibi aynen yazılır.
 3. Bunlar dışında gereken her malzeme "kaynak":"ek" olarak işaretlenir; her tarifte en fazla 2 ek malzeme kullan.
 4. Hiçbir ürünün güvenli, bozulmamış veya tüketilebilir olduğunu söyleme; gıda güvenliği hükmü verme.
 5. Her tarifte adımlar en fazla 6 tane, kısa ve uygulanabilir olsun.
+6. Tarif adı, gerekçe, miktarlar, adımlar ve "ek" malzeme adları ${dilAdi()} olsun. "yontem" alanına yöntem adını yukarıda yazıldığı gibi aynen yaz.
 
 KARAR SIRASI (her tarif için; düşünme sürecini yazma, yalnızca sonucu ve kısa gerekçeyi yaz):
 1) Merkeze alınacak öncelikli ürünü seç. 2) Onunla uyumlu yan ürünleri seç. 3) Tarifi istenen yönteme uyarla. 4) Miktarları kişi sayısı ve çarpana göre hesapla. 5) Kuralları tek tek kontrol et.
@@ -295,95 +410,72 @@ ${geriMap ? "\nÖNCEKİ DENEMEDE BU TARİFLERDE BULUNAN SORUNLAR (mutlaka düzel
 ÇIKTI (yalnızca bu JSON):
 {"tarifler":[{"yontem":"<yukarıdaki yöntem adı, aynen>","ad":"","kisi":0,"hazirlik_dk":0,"pisirme_dk":0,"oncelikli_kullanilan":[""],"gerekce":"en fazla 2 cümle: neden bu ürünler bu yöntemle","malzemeler":[{"ad":"","miktar":"","kaynak":"dolap|kiler|ek"}],"adimlar":[""]}]}`;
 }
-
 const SYS_DENETCI = "Sen SonKullan+ uygulamasının bağımsız tarif denetçisisin. Tarifi yeniden yazmazsın, iyileştirmezsin; yalnızca verilen kontrol listesine göre denetlersin. Yalnızca geçerli JSON döndürürsün.";
 function denetciPrompt(tarifler, c){
   return `DENETLENECEK TARİFLER (index sırasıyla):
 ${tarifler.map((r,i)=>`index ${i}: ${JSON.stringify(r)}`).join("\n")}
 
-YASAK ALERJENLER: ${c.alerjenler.map(a=>ALERJEN[a].ad).join(", ") || "yok"}
+YASAK ALERJENLER: ${c.alerjenler.map(a=>ALERJEN[a].ad.join("/")).join(", ") || "yok"}
 DIŞARIDA BIRAKILAN ÜRÜNLER (tarihi geçmiş, onaysız veya istenmeyen): ${c.disarida.map(d=>d.ad+" ("+d.neden+")").join(", ") || "yok"}
 DOLAPTA KULLANILABİLİR ÜRÜNLER: ${c.izinli.map(i=>i.ad).join(", ")}
 KİLER: ${c.kiler.join(", ")}
 
-HER TARİF İÇİN KONTROL LİSTESİ (her maddeyi ayrı değerlendir):
-K1 Tarifte yasak bir alerjen veya onun türevi var mı? (ör. süt → tereyağı, kaşar, krema, beşamel; gluten → un, galeta, yufka, makarna; yumurta → mayonez)
+HER TARİF İÇİN KONTROL LİSTESİ (her maddeyi ayrı değerlendir; tarifler Türkçe veya İngilizce olabilir):
+K1 Tarifte yasak bir alerjen veya onun türevi var mı? (ör. süt → tereyağı, kaşar, krema, beşamel / butter, cheese, cream; gluten → un, galeta, yufka, makarna / flour, breadcrumbs, pasta; yumurta → mayonez / mayonnaise)
 K2 "dolap" kaynağıyla gösterilen bir malzeme, dolapta kullanılabilir ürünler arasında yok mu?
 K3 Dışarıda bırakılan bir ürün (veya başka adla aynı ürün) tarifte kullanılmış mı?
 K4 Tarif veya gerekçe, bir ürünün güvenli, bozulmamış ya da tüketilebilir olduğunu iddia ediyor mu?
 K5 Adımlarda, malzeme listesinde hiç geçmeyen bir malzeme kullanılıyor mu?
 
-Bir kontrol ihlal içeriyorsa "KALDI" yaz ve kanıtı (ilgili kelime veya cümle) belirt. Emin değilsen KALDI yaz.
+Bir kontrol ihlal içeriyorsa "KALDI" yaz ve kanıtı (ilgili kelime veya cümle) belirt. Emin değilsen KALDI yaz. "kanit" alanını ${dilAdi()} yaz.
 ÇIKTI (yalnızca bu JSON):
 {"sonuclar":[{"index":0,"gecti":true,"kontroller":[{"kod":"K1","sonuc":"GEÇTİ|KALDI","kanit":""}]}]}`;
 }
+const TK_CIKARIM = "Role prompting + few-shot (clear / ambiguous / unreadable examples) + structured JSON";
+const TK_TARIF = "Role prompting + step-by-step decision order + short rationale (reasoning-oriented) + structured JSON";
+const TK_DEN = "Role prompting + zero-shot checklist (verification)";
 
-/* ===================== GÖRSELDEN EKLEME ===================== */
+/* ===================== GÖRSEL VE SES ===================== */
 async function gorselIsle(file, tip){
-  UI.ekleHata=""; UI.ekleDurum = tip==="fis" ? "Fiş okunuyor (yapay zekâ)…" : "Ambalaj okunuyor (yapay zekâ)…"; render();
+  UI.ekleHata=""; UI.ekleDurum = tip==="fis" ? t("fisOkunuyor") : t("ambOkunuyor"); render();
   try{
-    const t = await callAI({ amac: tip==="fis"?"Fişten ürün çıkarımı":"Ambalajdan ürün ve tarih çıkarımı",
-      teknik:"Role prompting + few-shot (net / belirsiz / okunamayan örnekler) + yapılandırılmış JSON",
-      system:SYS_CIKARIM, content: tip==="fis"?FIS_PROMPT():AMBALAJ_PROMPT(), images:file });
-    const j = parseJSON(t);
+    const tx = await callAI({ amac: tip==="fis"?t("amFis"):t("amAmb"), teknik:TK_CIKARIM, system:SYS_CIKARIM, content: tip==="fis"?FIS_PROMPT():AMBALAJ_PROMPT(), images:file });
+    const j = parseJSON(tx);
     const satirlar = tip==="fis" ? fisSatirlari(j) : ambalajSatirlari(j);
-    if(!satirlar.length) throw new Error("Görselde gıda ürünü bulunamadı. Daha yakından ve net bir fotoğraf deneyin ya da elle ekleyin.");
+    if(!satirlar.length) throw new Error(t("gidaYok"));
     S.bekleyen = [...S.bekleyen, ...satirlar]; kaydet();
-  }catch(e){ UI.ekleHata = "Görsel okunamadı: " + e.message + " Ürünleri elle ekleyebilirsiniz."; }
-  UI.ekleDurum=""; render();
-}
-function SES_PROMPT(metin){ const b=bugun(), d=gunEkle(b,-1); return `Kullanıcı buzdolabına ne koyduğunu konuşarak anlattı; konuşma telefonun diktesiyle metne çevrildi, yazım hataları olabilir. Bugünün tarihi: ${b}.
-Konuşmayı envanter kayıtlarına çevir. Kurallar:
-- "bugün", "dün", "iki gün önce" gibi ifadeleri YYYY-AA-GG alış tarihine çevir. İfade belirsizse ("geçenlerde") alis_tarihi=null ve guven="dusuk" yaz.
-- "kalan", "açtım", "yarım" geçiyorsa acilmis=true yaz.
-- Miktar belirsizse ("biraz", "bir miktar") miktar=null yaz; sayı uydurma.
-- Konuşmada son tüketim tarihi açıkça söylenmişse tarih alanına yaz ve türünü belirt; söylenmemişse tarih=null.
-- Gıda dışı şeyleri atla. Kategoriyi şu listeden seç: ${katListesi()}.
-
-Örnek: "2 paket mantar aldım, dolapta dünden kalan yarım paket krema var"
-→ {"urunler":[{"urun":"Mantar","kategori":"mantar","miktar":2,"birim":"paket","alis_tarihi":"${b}","acilmis":false,"tarih":null,"tarih_turu":"yok","guven":"yuksek"},{"urun":"Krema","kategori":"sut_urunu","miktar":0.5,"birim":"paket","alis_tarihi":"${d}","acilmis":true,"tarih":null,"tarih_turu":"yok","guven":"yuksek"}]}
-Örnek: "geçenlerde biraz peynir almıştım"
-→ {"urunler":[{"urun":"Peynir","kategori":"sut_urunu","miktar":null,"birim":null,"alis_tarihi":null,"acilmis":false,"tarih":null,"tarih_turu":"yok","guven":"dusuk"}]}
-
-KONUŞMA METNİ:
-"""${metin}"""
-
-ÇIKTI (yalnızca bu JSON):
-{"urunler":[{"urun":"","kategori":"","miktar":null,"birim":null,"alis_tarihi":null,"acilmis":false,"tarih":null,"tarih_turu":"STT|TETT|yok","guven":"yuksek|dusuk"}]}`; }
-function sesSatirlari(j){
-  return (j.urunler||[]).map(u=>{ const a=okTarih(u.alis_tarihi), t=okTarih(u.tarih), kat=KAT[u.kategori]?u.kategori:"diger";
-    const tur=((u.tarih_turu==="STT"||u.tarih_turu==="TETT")&&t)?u.tarih_turu:"YOK"; const not=[];
-    if(!a) not.push("Alış zamanı belirsiz; bugün varsayıldı.");
-    if(u.acilmis) not.push("Açılmış ürün: tahmini süre kapalı ürüne göre hesaplanır, gerçek süre daha kısa olabilir.");
-    if(u.miktar==null) not.push("Miktar belirtilmedi.");
-    return {uid:uid(),ad:u.urun||"",kaynakMetin:"",kategori:kat,miktar:u.miktar??"",birim:u.birim||"",alis:a||bugun(),tarih:t||"",tur,
-      guven:(u.guven==="yuksek"&&a&&kat!=="diger")?"yuksek":"dusuk",not:not.join(" "),giris:"ses"}; });
-}
-async function sesliIsle(){
-  const metin = UI.sesMetin.trim();
-  if(!metin){ alert("Önce dolaba ne koyduğunu söyle ya da yaz."); return; }
-  UI.ekleHata=""; UI.ekleDurum="Konuşma ürün listesine çevriliyor (yapay zekâ)…"; render();
-  try{
-    const j = parseJSON(await callAI({amac:"Konuşmadan ürün çıkarımı",teknik:"Role prompting + few-shot (net ve belirsiz konuşma örnekleri) + yapılandırılmış JSON",system:SYS_CIKARIM,content:SES_PROMPT(metin)}));
-    const satirlar = sesSatirlari(j);
-    if(!satirlar.length) throw new Error("Konuşmada gıda ürünü bulunamadı.");
-    S.bekleyen = [...S.bekleyen, ...satirlar]; UI.sesMetin=""; kaydet();
-  }catch(e){ UI.ekleHata = "Konuşma çevrilemedi: " + e.message; }
+  }catch(e){ UI.ekleHata = t("gorselHata", e.message); }
   UI.ekleDurum=""; render();
 }
 function fisSatirlari(j){
   const ft = okTarih(j.fis_tarihi);
-  return (j.kalemler||[]).map(k=>{ const kat = KAT[k.kategori] ? k.kategori : "diger";
-    const notlar=[]; if(!ft) notlar.push("Fiş tarihi okunamadı; bugün varsayıldı.");
-    if(kat==="diger") notlar.push("Kategori belirsiz.");
-    else if(KAT[kat].gun==null) notlar.push("Paketli ürün: etiket tarihini girin.");
+  return (j.kalemler||[]).map(k=>{ const kat = KAT[k.kategori] ? k.kategori : "diger"; const n=[];
+    if(!ft) n.push(t("nFisTarih")); if(kat==="diger") n.push(t("nKatBelirsiz")); else if(KAT[kat].gun==null) n.push(t("nPaketli"));
     return {uid:uid(),ad:k.urun||k.fis_metni||"",kaynakMetin:k.fis_metni||"",kategori:kat,miktar:k.miktar??"",birim:k.birim||"",alis:ft||bugun(),tarih:"",tur:"YOK",
-      guven:(ft && k.guven==="yuksek" && kat!=="diger")?"yuksek":"dusuk", not:notlar.join(" "), giris:"fis"}; });
+      guven:(ft && k.guven==="yuksek" && kat!=="diger")?"yuksek":"dusuk", not:n.join(" "), giris:"fis"}; });
 }
 function ambalajSatirlari(j){
-  return (j.urunler||[]).map(u=>{ const t=okTarih(u.tarih); const tur=((u.tarih_turu==="STT"||u.tarih_turu==="TETT")&&t)?u.tarih_turu:"YOK";
-    return {uid:uid(),ad:u.urun||"",kaynakMetin:"",kategori:KAT[u.kategori]?u.kategori:"diger",miktar:"",birim:"",alis:bugun(),tarih:t||"",tur,
-      guven:(u.guven==="yuksek"&&t&&tur!=="YOK")?"yuksek":"dusuk", not:u.not||(!t?"Tarih okunamadı; etiketten kontrol edip girin.":""), giris:"ambalaj"}; });
+  return (j.urunler||[]).map(u=>{ const d=okTarih(u.tarih); const tur=((u.tarih_turu==="STT"||u.tarih_turu==="TETT")&&d)?u.tarih_turu:"YOK";
+    return {uid:uid(),ad:u.urun||"",kaynakMetin:"",kategori:KAT[u.kategori]?u.kategori:"diger",miktar:"",birim:"",alis:bugun(),tarih:d||"",tur,
+      guven:(u.guven==="yuksek"&&d&&tur!=="YOK")?"yuksek":"dusuk", not:u.not||(!d?t("nTarihOkunamadi"):""), giris:"ambalaj"}; });
+}
+function sesSatirlari(j){
+  return (j.urunler||[]).map(u=>{ const a=okTarih(u.alis_tarihi), d=okTarih(u.tarih), kat=KAT[u.kategori]?u.kategori:"diger";
+    const tur=((u.tarih_turu==="STT"||u.tarih_turu==="TETT")&&d)?u.tarih_turu:"YOK"; const n=[];
+    if(!a) n.push(t("nAlisBelirsiz")); if(u.acilmis) n.push(t("nAcik")); if(u.miktar==null) n.push(t("nMiktarYok"));
+    return {uid:uid(),ad:u.urun||"",kaynakMetin:"",kategori:kat,miktar:u.miktar??"",birim:u.birim||"",alis:a||bugun(),tarih:d||"",tur,
+      guven:(u.guven==="yuksek"&&a&&kat!=="diger")?"yuksek":"dusuk",not:n.join(" "),giris:"ses"}; });
+}
+async function sesliIsle(){
+  const metin = UI.sesMetin.trim();
+  if(!metin){ alert(t("sesBos")); return; }
+  UI.ekleHata=""; UI.ekleDurum=t("sesCevriliyor"); render();
+  try{
+    const satirlar = sesSatirlari(parseJSON(await callAI({amac:t("amSes"),teknik:TK_CIKARIM,system:SYS_CIKARIM,content:SES_PROMPT(metin)})));
+    if(!satirlar.length) throw new Error(t("sesGidaYok"));
+    S.bekleyen = [...S.bekleyen, ...satirlar]; UI.sesMetin=""; kaydet();
+  }catch(e){ UI.ekleHata = t("sesHata", e.message); }
+  UI.ekleDurum=""; render();
 }
 
 /* ===================== ELİMDEKİLERİ KURTAR ===================== */
@@ -392,8 +484,8 @@ function kurtarBaglam(kisi, alerjenler, istStr){
   const izinli=[], disarida=[];
   aktifUrunler().forEach(it=>{ const du=durum(it);
     if(!du.uygun){ disarida.push({ad:it.ad,neden:du.neden}); return; }
-    const al=urunAlerjen(it,alerjenler); if(al){ disarida.push({ad:it.ad,neden:"alerjen: "+al}); return; }
-    if(ist.some(k=>kelimeVar(it.ad,k))){ disarida.push({ad:it.ad,neden:"istenmiyor"}); return; }
+    const al=urunAlerjen(it,alerjenler); if(al){ disarida.push({ad:it.ad,neden:t("nAlerjen",al)}); return; }
+    if(ist.some(k=>kelimeVar(it.ad,k))){ disarida.push({ad:it.ad,neden:t("nIst")}); return; }
     izinli.push({...it,_d:du}); });
   izinli.sort((a,b)=>(a._d.d??9999)-(b._d.d??9999));
   let capa = izinli.filter(i=>!i._d.yan && (i._d.renk==="kirmizi"||i._d.renk==="sari")).slice(0,2), acilYok=false;
@@ -404,37 +496,37 @@ function kurtarBaglam(kisi, alerjenler, istStr){
   return {kisi,alerjenler,ist,izinli,disarida,disaridaKontrol,capa,yan,kiler,acilYok,carpan:S.hane.carpan};
 }
 function kodDenetim(r, c){
-  if(!r || !r.ad || !Array.isArray(r.malzemeler) || !Array.isArray(r.adimlar)) return ["Çıktı beklenen JSON biçiminde değil."];
+  if(!r || !r.ad || !Array.isArray(r.malzemeler) || !Array.isArray(r.adimlar)) return [t("vFormat")];
   const v=[];
   r.malzemeler.forEach(m=>{
-    if(m.kaynak==="dolap" && !c.izinli.some(i=>benzer(i.ad,m.ad))) v.push(`“${m.ad}” dolap ürünü olarak gösterilmiş ama kullanılabilir ürünler arasında yok.`);
+    if(m.kaynak==="dolap" && !c.izinli.some(i=>benzer(i.ad,m.ad))) v.push(t("vDolapYok",m.ad));
     if(m.kaynak==="kiler" && !c.kiler.some(k=>benzer(k,m.ad))) m.kaynak="ek";
   });
   const metin = [r.ad, r.gerekce, ...r.malzemeler.map(m=>m.ad), ...r.adimlar].join(" ");
-  c.alerjenler.forEach(a=>ALERJEN[a].kelimeler.forEach(k=>{ if(kelimeVar(metin,k)) v.push(`Alerjen ihlali: “${k}” (${ALERJEN[a].ad}).`); }));
-  c.ist.forEach(k=>{ if(kelimeVar(metin,k)) v.push(`İstenmeyen malzeme kullanılmış: “${k}”.`); });
-  c.disaridaKontrol.forEach(d=>{ if(kelimeVar(metin,d.ad)) v.push(`Dışarıda bırakılan ürün kullanılmış: “${d.ad}” (${d.neden}).`); });
-  YASAK_IFADE.forEach(k=>{ if(norm(metin).includes(k)) v.push(`Gıda güvenliği iddiası içeriyor: “${k}”.`); });
-  if(!r.malzemeler.some(m=>m.kaynak==="dolap" && c.capa.some(x=>benzer(x.ad,m.ad)))) v.push("Öncelikli ürünlerden hiçbiri kullanılmamış.");
+  c.alerjenler.forEach(a=>ALERJEN[a].kelimeler.forEach(k=>{ if(kelimeVar(metin,k)) v.push(t("vAlerjen",temizK(k),alerjenAd(a))); }));
+  c.ist.forEach(k=>{ if(kelimeVar(metin,k)) v.push(t("vIst",k)); });
+  c.disaridaKontrol.forEach(d=>{ if(kelimeVar(metin,d.ad)) v.push(t("vDis",d.ad,d.neden)); });
+  YASAK_IFADE.forEach(k=>{ if(norm(metin).includes(k)) v.push(t("vIddia",k)); });
+  if(!r.malzemeler.some(m=>m.kaynak==="dolap" && c.capa.some(x=>benzer(x.ad,m.ad)))) v.push(t("vCapa"));
   return [...new Set(v)];
 }
 async function tarifTur(yontemler, c, geriMap, ilerle, tur){
-  ilerle(`${tur}. tur: ${yontemler.length} tarif yazılıyor`);
-  const j = parseJSON(await callAI({amac:`Tarif üretimi (${tur}. tur)`,teknik:"Role prompting + adım adım karar sırası + kısa gerekçe (reasoning-oriented) + yapılandırılmış JSON",system:SYS_TARIF,content:tarifPrompt(yontemler,c,geriMap),cache:false}));
+  ilerle(t("tur1",tur,yontemler.length));
+  const j = parseJSON(await callAI({amac:t("amTarif",tur),teknik:TK_TARIF,system:SYS_TARIF,content:tarifPrompt(yontemler,c,geriMap)}));
   const liste = Array.isArray(j.tarifler) ? j.tarifler : [];
-  const sonuc = yontemler.map((y,i)=>{ const r = liste.find(t=>t && norm(t.yontem)===norm(y)) || liste[i]; return {yontem:y,tarif:r,kod:kodDenetim(r,c),deneme:tur,gecti:false}; });
+  const sonuc = yontemler.map((y,i)=>{ const r = liste.find(x=>x && norm(x.yontem)===norm(y)) || liste[i]; return {yontem:y,tarif:r,kod:kodDenetim(r,c),deneme:tur,gecti:false}; });
   const kodKalan = sonuc.filter(s=>s.kod.length).length;
-  if(kodKalan) ilerle(`${tur}. tur: kod kontrolü ${kodKalan} tarifte sorun buldu`);
+  if(kodKalan) ilerle(t("turKod",tur,kodKalan));
   const aday = sonuc.filter(s=>!s.kod.length);
   if(aday.length){
-    ilerle(`${tur}. tur: yapay zekâ denetçisi ${aday.length} tarifi kontrol ediyor`);
-    let dz; try{ dz = parseJSON(await callAI({amac:`Tarif denetimi (${tur}. tur)`,teknik:"Role prompting + zero-shot kontrol listesi (verification)",system:SYS_DENETCI,content:denetciPrompt(aday.map(s=>s.tarif),c),cache:false})); }catch(e){ dz={sonuclar:[]}; }
+    ilerle(t("turDen",tur,aday.length));
+    let dz; try{ dz = parseJSON(await callAI({amac:t("amDen",tur),teknik:TK_DEN,system:SYS_DENETCI,content:denetciPrompt(aday.map(s=>s.tarif),c)})); }catch(e){ dz={sonuclar:[]}; }
     aday.forEach((s,i)=>{
       const d = (dz.sonuclar||[]).find(x=>Number(x.index)===i);
-      s.denetci = d || {gecti:false,kontroller:[{kod:"—",sonuc:"KALDI",kanit:"Denetçi bu tarif için yanıt vermedi."}]};
+      s.denetci = d || {gecti:false,kontroller:[{kod:"—",sonuc:"KALDI",kanit:t("denYanitYok")}]};
       const kalan = (s.denetci.kontroller||[]).filter(k=>norm(k.sonuc).startsWith("kal"));
       s.gecti = s.denetci.gecti===true && !kalan.length;
-      s.denetciSorun = kalan.length ? kalan.map(k=>`${k.kod}: ${k.kanit}`) : (s.gecti?[]:["Denetçi tarifi onaylamadı."]);
+      s.denetciSorun = kalan.length ? kalan.map(k=>`${k.kod}: ${k.kanit}`) : (s.gecti?[]:[t("denOnaylamadi")]);
     });
   }
   return sonuc;
@@ -445,39 +537,40 @@ async function kurtar(){
   S.hane.kisi = kisi; kaydet();
   const c = kurtarBaglam(kisi, S.hane.alerjenler, istStr);
   UI.kurtarHata="";
-  if(!c.capa.length){ UI.kurtarHata="Tarif için kullanılabilir ürün yok. Önce dolabına ürün ekle veya tarihi geçmiş ürünleri kontrol et."; render(); return; }
+  if(!c.capa.length){ UI.kurtarHata=t("kUrunYok"); render(); return; }
   UI.kurtarCalisiyor=true; UI.ilerleme=[]; UI.pisirilen={}; render();
   const ilerle = m => { UI.ilerleme.push(m); render(); };
+  const yontemler = YONTEMLER[LANG];
   try{
-    const sonuc = await tarifTur(YONTEMLER, c, null, ilerle, 1);
+    const sonuc = await tarifTur(yontemler, c, null, ilerle, 1);
     const kalan = sonuc.filter(s=>!s.gecti);
     if(kalan.length){
       const geriMap = {}; kalan.forEach(s=>{ geriMap[s.yontem] = s.kod.length ? s.kod : s.denetciSorun; });
-      ilerle(`${kalan.length} tarif sorunlu; bulunan sorunlar düzeltilerek yeniden yazılıyor`);
+      ilerle(t("turTekrar",kalan.length));
       try{
         const ikinci = await tarifTur(kalan.map(s=>s.yontem), c, geriMap, ilerle, 2);
         ikinci.forEach(n=>{ n.onceki = geriMap[n.yontem]; sonuc[sonuc.findIndex(s=>s.yontem===n.yontem)] = n; });
-      }catch(e){ kalan.forEach(s=>{ s.hata = "Yeniden deneme başarısız: " + e.message; }); }
+      }catch(e){ kalan.forEach(s=>{ s.hata = t("tekrarHata", e.message); }); }
     }
-    S.sonKurtar = { zaman:new Date().toLocaleString("tr-TR"), kisi, capa:c.capa.map(i=>i.ad), disarida:c.disarida, acilYok:c.acilYok, carpan:c.carpan, sonuclar:sonuc };
+    S.sonKurtar = { zaman:new Date().toLocaleString(yerel()), kisi, capa:c.capa.map(i=>i.ad), disarida:c.disarida, acilYok:c.acilYok, carpan:c.carpan, sonuclar:sonuc };
   }catch(e){ UI.kurtarHata = e.message; }
   UI.kurtarCalisiyor=false; kaydet(); render();
 }
 
-/* ===================== DEMO VERİSİ ===================== */
+/* ===================== DEMO ===================== */
 function demoYukle(){
-  const b=bugun();
+  const b=bugun(), E=LANG==="en";
   const d=[
-    {ad:"Tavuk göğsü",kategori:"tavuk",miktar:500,birim:"g",alis:gunEkle(b,-1),tur:"STT",tarih:gunEkle(b,1)},
-    {ad:"Ispanak",kategori:"yesil_yaprak",miktar:1,birim:"demet",alis:gunEkle(b,-2),tur:"YOK"},
-    {ad:"Domates",kategori:"domates",miktar:4,birim:"adet",alis:gunEkle(b,-2),tur:"YOK"},
-    {ad:"Kabak",kategori:"kabak_patlican",miktar:2,birim:"adet",alis:gunEkle(b,-1),tur:"YOK"},
-    {ad:"Yoğurt",kategori:"sut_urunu",miktar:1,birim:"kg",alis:gunEkle(b,-3),tur:"STT",tarih:gunEkle(b,3)},
-    {ad:"Makarna",kategori:"kuru_gida",miktar:500,birim:"g",alis:gunEkle(b,-20),tur:"TETT",tarih:gunEkle(b,150)},
-    {ad:"Pirinç",kategori:"kuru_gida",miktar:1,birim:"kg",alis:gunEkle(b,-30),tur:"TETT",tarih:gunEkle(b,200)},
-    {ad:"Kıyma",kategori:"kiyma",miktar:250,birim:"g",alis:gunEkle(b,-4),tur:"STT",tarih:gunEkle(b,-1)},
-    {ad:"Ekmek",kategori:"ekmek",miktar:0.5,birim:"adet",alis:gunEkle(b,-1),tur:"YOK"},
-    {ad:"Soğan",kategori:"kok_sebze",miktar:3,birim:"adet",alis:gunEkle(b,-5),tur:"YOK"}
+    {ad:E?"Chicken breast":"Tavuk göğsü",kategori:"tavuk",miktar:500,birim:"g",alis:gunEkle(b,-1),tur:"STT",tarih:gunEkle(b,1)},
+    {ad:E?"Spinach":"Ispanak",kategori:"yesil_yaprak",miktar:1,birim:E?"bunch":"demet",alis:gunEkle(b,-2),tur:"YOK"},
+    {ad:E?"Tomatoes":"Domates",kategori:"domates",miktar:4,birim:E?"pcs":"adet",alis:gunEkle(b,-2),tur:"YOK"},
+    {ad:E?"Zucchini":"Kabak",kategori:"kabak_patlican",miktar:2,birim:E?"pcs":"adet",alis:gunEkle(b,-1),tur:"YOK"},
+    {ad:E?"Yogurt":"Yoğurt",kategori:"sut_urunu",miktar:1,birim:"kg",alis:gunEkle(b,-3),tur:"STT",tarih:gunEkle(b,3)},
+    {ad:E?"Pasta":"Makarna",kategori:"kuru_gida",miktar:500,birim:"g",alis:gunEkle(b,-20),tur:"TETT",tarih:gunEkle(b,150)},
+    {ad:E?"Rice":"Pirinç",kategori:"kuru_gida",miktar:1,birim:"kg",alis:gunEkle(b,-30),tur:"TETT",tarih:gunEkle(b,200)},
+    {ad:E?"Minced beef":"Kıyma",kategori:"kiyma",miktar:250,birim:"g",alis:gunEkle(b,-4),tur:"STT",tarih:gunEkle(b,-1)},
+    {ad:E?"Bread":"Ekmek",kategori:"ekmek",miktar:0.5,birim:E?"loaf":"adet",alis:gunEkle(b,-1),tur:"YOK"},
+    {ad:E?"Onions":"Soğan",kategori:"kok_sebze",miktar:3,birim:E?"pcs":"adet",alis:gunEkle(b,-5),tur:"YOK"}
   ];
   S.items = S.items.filter(i=>!i.demo).concat(d.map(x=>kalemOlustur({...x,demo:true,giris:"demo"})));
   kaydet(); render();
@@ -485,165 +578,159 @@ function demoYukle(){
 
 /* ===================== GÖRÜNÜMLER ===================== */
 function urunKarti(i,du){
-  const kat = KAT[i.kategori]?.ad || i.kategori;
   return `<div class="urun ${du.renk}"><div class="cubuk"></div><div class="urun-ic">
     <div class="urun-ust"><span class="urun-ad">${esc(i.ad)}</span><span class="durum">${esc(du.etiket)}</span></div>
-    <div class="meta">${i.miktar!==""?esc(i.miktar+" "+i.birim)+" · ":""}${esc(kat)} · Alış ${trTarih(i.alis)} · Takip ${trTarih(i.tarih)}</div>
-    <div>${kaynakEtiketi(i)}${i.demo?`<span class="etiket demo">Demo verisi</span>`:""}</div>
-    ${du.renk==="gri"&&i.tur==="STT"&&du.d<0?`<div class="uyari">Son tüketim tarihi geçmiş. Tarife dahil edilmez; tüketmeyin ve yerel atık kurallarına göre atın.</div>`:""}
-    ${du.kontrolSor?`<label class="satir" style="color:var(--ink)"><input type="checkbox" style="width:auto" data-act="kontrol" data-id="${i.id}" ${i.kontrol?"checked":""}> Koku, görünüm ve dokusunu kontrol ettim; yan malzeme olarak değerlendirilebilir</label><div class="meta">Duyusal kontrol bir güvenlik garantisi değildir. Şüphe duyuyorsan tüketme.</div>`:""}
-    <div class="satir" style="margin-top:8px"><button class="kucuk" data-act="kullandim" data-id="${i.id}">Kullandım</button><button class="kucuk" data-act="sil" data-id="${i.id}">Sil</button></div>
+    <div class="meta">${i.miktar!==""?esc(i.miktar+" "+i.birim)+" · ":""}${esc(katAd(i.kategori))} · ${t("alis")} ${gTarih(i.alis)} · ${t("takip")} ${gTarih(i.tarih)}</div>
+    <div>${kaynakEtiketi(i)}${i.demo?`<span class="etiket demo">${t("etDemo")}</span>`:""}</div>
+    ${du.renk==="gri"&&i.tur==="STT"&&du.d<0?`<div class="uyari">${t("sttUyari")}</div>`:""}
+    ${du.kontrolSor?`<label class="satir" style="color:var(--ink)"><input type="checkbox" style="width:auto" data-act="kontrol" data-id="${i.id}" ${i.kontrol?"checked":""}> ${t("kontrolEttim")}</label><div class="meta">${t("kontrolNot")}</div>`:""}
+    <div class="satir" style="margin-top:8px"><button class="kucuk" data-act="kullandim" data-id="${i.id}">${t("kullandim")}</button><button class="kucuk" data-act="sil" data-id="${i.id}">${t("sil")}</button></div>
   </div></div>`;
 }
 function vDolap(){
   const l = sirali();
-  if(!l.length) return `<div class="kart"><h2>Dolabın boş</h2><p class="alt">Fiş veya ambalaj fotoğrafıyla ya da elle ürün ekleyerek başla.</p>
-    <div class="satir"><button class="ana" data-act="tab" data-t="ekle">Ürün ekle</button><button data-act="demo">Demo ürünlerini yükle</button></div></div>`;
+  if(!l.length) return `<div class="kart"><h2>${t("bos")}</h2><p class="alt">${t("bosAlt")}</p>
+    <div class="satir"><button class="ana" data-act="tab" data-t="ekle">${t("urunEkle")}</button><button data-act="demo">${t("demoYukle")}</button></div></div>`;
   const say = r => l.filter(x=>x.du.renk===r).length;
   const acil = l.filter(x=>x.du.renk==="kirmizi");
-  return `${acil.length?`<div class="acil"><strong>Bugün ${acil.length} ürün acil:</strong> ${acil.map(x=>esc(x.i.ad)).join(", ")}
-      <div style="margin-top:10px"><button class="ana" data-act="tab" data-t="kurtar">Elimdekileri Kurtar</button></div></div>`:""}
-    <div class="ozet"><div class="o-k"><b>${say("kirmizi")}</b>0–1 gün</div><div class="o-s"><b>${say("sari")}</b>2–3 gün</div><div class="o-y"><b>${say("yesil")}</b>Daha uzun</div><div class="o-g"><b>${say("gri")+say("belirsiz")}</b>Kontrol</div></div>
+  return `${acil.length?`<div class="acil"><strong>${t("acil",acil.length)}</strong> ${acil.map(x=>esc(x.i.ad)).join(", ")}
+      <div style="margin-top:10px"><button class="ana" data-act="tab" data-t="kurtar">${t("kurtarBtn")}</button></div></div>`:""}
+    <div class="ozet"><div class="o-k"><b>${say("kirmizi")}</b>${t("ozK")}</div><div class="o-s"><b>${say("sari")}</b>${t("ozS")}</div><div class="o-y"><b>${say("yesil")}</b>${t("ozY")}</div><div class="o-g"><b>${say("gri")+say("belirsiz")}</b>${t("ozG")}</div></div>
     ${l.map(x=>urunKarti(x.i,x.du)).join("")}
-    <p class="dipnot">“Etiket tarihi” ambalajdan okunan ve senin onayladığın tarihtir. “Tahmini” tarih, alış tarihine referans tablodaki süre eklenerek kodla hesaplanır; kesin değildir. Tablo değerleri şu an örnek değerdir (${esc(KAYNAK_NOTU)}).</p>
-    <div class="satir"><button class="kucuk" data-act="demo">Demo ürünlerini yeniden yükle</button><button class="kucuk" data-act="hepsiniSil">Dolabı temizle</button></div>`;
+    <p class="dipnot">${t("dipDolap",esc(t("kaynakNotu")))}</p>
+    <div class="satir"><button class="kucuk" data-act="demo">${t("demoYeniden")}</button><button class="kucuk" data-act="hepsiniSil">${t("dolapTemizle")}</button></div>`;
 }
-function katSecenek(sec){ return Object.entries(KAT).map(([k,v])=>`<option value="${k}" ${k===sec?"selected":""}>${esc(v.ad)}${v.gun!=null?` (tablo: ${v.gun} gün)`:""}</option>`).join(""); }
+function katSecenek(sec){ return Object.keys(KAT).map(k=>`<option value="${k}" ${k===sec?"selected":""}>${esc(katAd(k))}${KAT[k].gun!=null?` (${LANG==="en"?"table":"tablo"}: ${KAT[k].gun} ${LANG==="en"?"d":"gün"})`:""}</option>`).join(""); }
+function turSecenek(sec,uzun){ return `<option value="YOK" ${sec==="YOK"?"selected":""}>${uzun?t("turYok"):t("turYokKisa")}</option><option value="STT" ${sec==="STT"?"selected":""}>${t("turSTT")}</option><option value="TETT" ${sec==="TETT"?"selected":""}>${t("turTETT")}</option>`; }
 function vEkle(){
-  const b = S.bekleyen;
-  return `<div class="kart"><h2>Fotoğraftan ekle</h2>
-      <p class="alt">Yapay zekâ fişi veya ambalajı okur, sen kontrol edip onaylarsın. Okuyamadığı bilgiyi boş bırakır.</p>
-      <p class="meta">İyi sonuç için tarih alanına yakından ve parlamasız çek; fişin tüm satırları kadrajda olsun. Fotoğraf okunmak üzere Google Gemini’ye gönderilir: fişte adın veya kart bilgilerin görünüyorsa o kısmı kapatarak çek.</p>
-      <div class="ızgara"><button class="ana" data-act="dosya" data-t="fis" ${UI.ekleDurum?"disabled":""}>Market fişi</button><button class="ana" data-act="dosya" data-t="ambalaj" ${UI.ekleDurum?"disabled":""}>Ambalaj / tarih</button></div>
+  return `<div class="kart"><h2>${t("fotoBaslik")}</h2><p class="alt">${t("fotoAlt")}</p><p class="meta">${t("fotoIpucu")}</p>
+      <div class="ızgara"><button class="ana" data-act="dosya" data-t="fis" ${UI.ekleDurum?"disabled":""}>${t("fis")}</button><button class="ana" data-act="dosya" data-t="ambalaj" ${UI.ekleDurum?"disabled":""}>${t("ambalaj")}</button></div>
       <input type="file" accept="image/*" capture="environment" id="dosya-fis" class="dosya"><input type="file" accept="image/*" capture="environment" id="dosya-ambalaj" class="dosya">
       ${UI.ekleDurum?`<p class="bilgi">${esc(UI.ekleDurum)}</p>`:""}${UI.ekleHata?`<p class="uyari">${esc(UI.ekleHata)}</p>`:""}
     </div>
-    ${b.length?vOnay(b):""}
-    <div class="kart"><h2>Elle ekle</h2>
-      <label for="m-ad">Ürün adı</label><input id="m-ad" placeholder="ör. Ispanak">
-      <label for="m-kat">Kategori</label><select id="m-kat">${katSecenek("diger")}</select>
-      <div class="ızgara"><div><label for="m-mik">Miktar</label><input id="m-mik" inputmode="decimal" placeholder="ör. 500"></div><div><label for="m-bir">Birim</label><input id="m-bir" placeholder="g, adet, demet"></div></div>
-      <div class="ızgara"><div><label for="m-alis">Alış tarihi</label><input id="m-alis" type="date" value="${bugun()}"></div>
-      <div><label for="m-tur">Etiket tarihi</label><select id="m-tur"><option value="YOK">Yok / bilmiyorum</option><option value="STT">STT (son tüketim)</option><option value="TETT">TETT (tavsiye edilen)</option></select></div></div>
-      <label for="m-tarih">Etiketteki tarih</label><input id="m-tarih" type="date">
-      <p class="alt">Etiket tarihi yoksa ve kategori referans tabloda varsa tahmini takip tarihi hesaplanır.</p>
-      <button class="ana buyuk" data-act="manuel">Dolaba ekle</button>
-    </div>
-    <div class="kart"><h2>Konuşarak ekle</h2>
-      <p class="alt">Kutuya dokun, klavyendeki mikrofon simgesine bas ve dolaba ne koyduğunu anlat. Örneğin: “İki paket mantar aldım, dünden kalan yarım paket krema var.”</p>
-      <textarea id="ses" rows="3" placeholder="Konuş ya da yaz…">${esc(UI.sesMetin)}</textarea>
-      <div style="margin-top:8px"><button class="ana" data-act="sesli" ${UI.ekleDurum?"disabled":""}>Ürünlere çevir</button></div></div>`;
+    ${S.bekleyen.length?vOnay(S.bekleyen):""}
+    <div class="kart"><h2>${t("sesBaslik")}</h2><p class="alt">${t("sesAlt")}</p>
+      <textarea id="ses" rows="3" placeholder="${esc(t("sesPh"))}">${esc(UI.sesMetin)}</textarea>
+      <div style="margin-top:8px"><button class="ana" data-act="sesli" ${UI.ekleDurum?"disabled":""}>${t("sesBtn")}</button></div></div>
+    <div class="kart"><h2>${t("elleBaslik")}</h2>
+      <label for="m-ad">${t("urunAdi")}</label><input id="m-ad" placeholder="${esc(t("urunOrnek"))}">
+      <label for="m-kat">${t("kategori")}</label><select id="m-kat">${katSecenek("diger")}</select>
+      <div class="ızgara"><div><label for="m-mik">${t("miktar")}</label><input id="m-mik" inputmode="decimal"></div><div><label for="m-bir">${t("birim")}</label><input id="m-bir" placeholder="${esc(t("birimOrnek"))}"></div></div>
+      <div class="ızgara"><div><label for="m-alis">${t("alisTarihi")}</label><input id="m-alis" type="date" value="${bugun()}"></div>
+      <div><label for="m-tur">${t("etiketTarihi")}</label><select id="m-tur">${turSecenek("YOK",true)}</select></div></div>
+      <label for="m-tarih">${t("etiketteki")}</label><input id="m-tarih" type="date">
+      <p class="alt">${t("elleIpucu")}</p>
+      <button class="ana buyuk" data-act="manuel">${t("dolabaEkle")}</button></div>`;
 }
 function vOnay(b){
-  return `<div class="kart"><h2>Okunan ürünleri kontrol et</h2>
-    <p class="alt">Düşük güvenli satırlar işaretli. Bilgileri düzelt ve “Doğruladım” kutusunu işaretle; doğrulanmadan dolaba eklenmez.</p>
+  return `<div class="kart"><h2>${t("onayBaslik")}</h2><p class="alt">${t("onayAlt")}</p>
     ${b.map((r,ix)=>`<div class="urun ${r.guven==="dusuk"?"sari":"yesil"}" data-onay="${ix}"><div class="cubuk"></div><div class="urun-ic">
-      <label class="satir" style="color:var(--ink);margin-top:0"><input type="checkbox" class="o-ekle" style="width:auto" checked> Dolaba ekle ${r.kaynakMetin?`<span class="alt">· fişte: ${esc(r.kaynakMetin)}</span>`:""}</label>
-      <label>Ürün adı</label><input class="o-ad" value="${esc(r.ad)}">
-      <label>Kategori</label><select class="o-kat">${katSecenek(r.kategori)}</select>
-      <div class="ızgara"><div><label>Miktar</label><input class="o-mik" value="${esc(r.miktar)}"></div><div><label>Birim</label><input class="o-bir" value="${esc(r.birim)}"></div></div>
-      <div class="ızgara"><div><label>Alış tarihi</label><input class="o-alis" type="date" value="${esc(r.alis)}"></div>
-      <div><label>Etiket tarihi türü</label><select class="o-tur"><option value="YOK" ${r.tur==="YOK"?"selected":""}>Yok</option><option value="STT" ${r.tur==="STT"?"selected":""}>STT</option><option value="TETT" ${r.tur==="TETT"?"selected":""}>TETT</option></select></div></div>
-      <label>Etiketteki tarih</label><input class="o-tarih" type="date" value="${esc(r.tarih)}">
+      <label class="satir" style="color:var(--ink);margin-top:0"><input type="checkbox" class="o-ekle" style="width:auto" checked> ${t("dolabaEkle")} ${r.kaynakMetin?`<span class="alt">· ${t("fisteki")} ${esc(r.kaynakMetin)}</span>`:""}</label>
+      <label>${t("urunAdi")}</label><input class="o-ad" value="${esc(r.ad)}">
+      <label>${t("kategori")}</label><select class="o-kat">${katSecenek(r.kategori)}</select>
+      <div class="ızgara"><div><label>${t("miktar")}</label><input class="o-mik" value="${esc(r.miktar)}"></div><div><label>${t("birim")}</label><input class="o-bir" value="${esc(r.birim)}"></div></div>
+      <div class="ızgara"><div><label>${t("alisTarihi")}</label><input class="o-alis" type="date" value="${esc(r.alis)}"></div>
+      <div><label>${t("etiketTuru")}</label><select class="o-tur">${turSecenek(r.tur,false)}</select></div></div>
+      <label>${t("etiketteki")}</label><input class="o-tarih" type="date" value="${esc(r.tarih)}">
       ${r.not?`<p class="meta">${esc(r.not)}</p>`:""}
-      ${r.guven==="dusuk"?`<label class="satir" style="color:var(--kirmizi)"><input type="checkbox" class="o-dog" style="width:auto"> Bilgileri kontrol ettim, doğruladım</label>`:""}
+      ${r.guven==="dusuk"?`<label class="satir" style="color:var(--kirmizi)"><input type="checkbox" class="o-dog" style="width:auto"> ${t("dogruladim")}</label>`:""}
     </div></div>`).join("")}
-    <div class="satir"><button class="ana" data-act="onayla">Seçilenleri dolaba ekle</button><button data-act="bekleyenSil">Vazgeç</button></div></div>`;
+    <div class="satir"><button class="ana" data-act="onayla">${t("seciliEkle")}</button><button data-act="bekleyenSil">${t("vazgec")}</button></div></div>`;
 }
 function vKurtar(){
   const k = S.sonKurtar;
-  return `<div class="kart"><h2>Elimdekileri Kurtar</h2>
-      <p class="alt">Bozulması en yakın ürünleri merkeze alan, birbirinden farklı üç tarif hazırlanır. Her tarif kod kontrolünden ve ayrı bir yapay zekâ denetiminden geçer.</p>
-      <div class="ızgara"><div><label for="kisi">Kaç kişi?</label><input id="kisi" type="number" min="1" max="12" value="${S.hane.kisi}"></div>
-      <div><label for="ist">Bugün istemediklerin</label><input id="ist" placeholder="ör. mantar, acı"></div></div>
-      <label>Alerjenler (tariflerden ve türevlerinden çıkarılır)</label>
-      <div>${Object.entries(ALERJEN).map(([key,a])=>`<span class="cip" role="button" tabindex="0" data-act="alerjen" data-k="${key}" aria-pressed="${S.hane.alerjenler.includes(key)}">${esc(a.ad)}</span>`).join("")}</div>
-      <details style="margin-top:8px"><summary>Kiler ve porsiyon ayarı</summary>
-        <label for="kiler">Evde hep olan temel malzemeler (virgülle)</label><textarea id="kiler" rows="2" data-act="kilerDegis">${esc(S.hane.kiler)}</textarea>
-        <p class="alt">Porsiyon çarpanı: ${S.hane.carpan.toFixed(2)} (geri bildirimlerinle ayarlanır) <button class="kucuk" data-act="carpanSifirla">Sıfırla</button></p>
+  return `<div class="kart"><h2>${t("kBaslik")}</h2><p class="alt">${t("kAlt")}</p>
+      <div class="ızgara"><div><label for="kisi">${t("kisi")}</label><input id="kisi" type="number" min="1" max="12" value="${S.hane.kisi}"></div>
+      <div><label for="ist">${t("istenmeyen")}</label><input id="ist" placeholder="${esc(t("istPh"))}"></div></div>
+      <label>${t("alerjenler")}</label>
+      <div>${Object.keys(ALERJEN).map(key=>`<span class="cip" role="button" tabindex="0" data-act="alerjen" data-k="${key}" aria-pressed="${S.hane.alerjenler.includes(key)}">${esc(alerjenAd(key))}</span>`).join("")}</div>
+      <details style="margin-top:8px"><summary>${t("kilerPorsiyon")}</summary>
+        <label for="kiler">${t("kilerEtiket")}</label><textarea id="kiler" rows="2">${esc(S.hane.kiler)}</textarea>
+        <p class="alt">${t("carpan",S.hane.carpan.toFixed(2))} <button class="kucuk" data-act="carpanSifirla">${t("sifirla")}</button></p>
       </details>
-      <div style="margin-top:12px"><button class="ana buyuk" data-act="kurtar" ${UI.kurtarCalisiyor?"disabled":""}>${UI.kurtarCalisiyor?"Tarifler hazırlanıyor…":"Elimdekileri Kurtar"}</button></div>
+      <div style="margin-top:12px"><button class="ana buyuk" data-act="kurtar" ${UI.kurtarCalisiyor?"disabled":""}>${UI.kurtarCalisiyor?t("hazirlaniyor"):t("kurtarBtn")}</button></div>
       ${UI.kurtarHata?`<p class="uyari">${esc(UI.kurtarHata)}</p>`:""}
       ${UI.kurtarCalisiyor?`<div class="ilerleme">${UI.ilerleme.map(m=>`<div>${esc(m)}</div>`).join("")}</div>`:""}
     </div>
     ${k && !UI.kurtarCalisiyor ? vSonuc(k) : ""}`;
 }
 function vSonuc(k){
-  return `<div class="kart"><h3>Bu sefer merkeze alınanlar</h3><p>${k.capa.map(esc).join(", ")}${k.acilYok?` <span class="alt">(acil ürün yok; en yakın tarihli seçildi)</span>`:""}</p>
-      ${k.disarida.length?`<details><summary>Tariflere dahil edilmeyen ${k.disarida.length} ürün</summary><ul>${k.disarida.map(d=>`<li>${esc(d.ad)} — ${esc(d.neden)}</li>`).join("")}</ul></details>`:""}
-      <p class="meta">${esc(k.zaman)} · ${k.kisi} kişi · porsiyon çarpanı ${Number(k.carpan).toFixed(2)}</p></div>
-    ${k.sonuclar.map((s,ix)=>s.gecti?tarifKarti(s,ix):`<div class="kart"><h3>${esc(YONTEMLER[ix])}</h3>
-        <div class="denetim kaldi">Bu yöntem için denetimden geçen bir tarif üretilemedi, bu yüzden gösterilmiyor.</div>
-        ${(s.kod&&s.kod.length)||s.denetci||s.hata?`<details><summary>Neden?</summary><pre>${esc([s.hata,...(s.kod||[]),...((s.denetci?.kontroller)||[]).filter(x=>norm(x.sonuc).startsWith("kal")).map(x=>x.kod+": "+x.kanit)].filter(Boolean).join("\n"))}</pre></details>`:""}</div>`).join("")}
-    <p class="dipnot">Tarifler yapay zekâ ile üretilir ve hata içerebilir. Tarih bir rehberdir; şüphe duyduğun ürünü tüketme. SonKullan+ profesyonel gıda güvenliği değerlendirmesinin yerini tutmaz.</p>`;
+  return `<div class="kart"><h3>${t("merkez")}</h3><p>${k.capa.map(esc).join(", ")}${k.acilYok?` <span class="alt">${t("acilYok")}</span>`:""}</p>
+      ${k.disarida.length?`<details><summary>${t("dahilDegil",k.disarida.length)}</summary><ul>${k.disarida.map(d=>`<li>${esc(d.ad)} — ${esc(d.neden)}</li>`).join("")}</ul></details>`:""}
+      <p class="meta">${esc(k.zaman)} · ${k.kisi} ${t("kisiKisa")} · ${t("carpanKisa")} ${Number(k.carpan).toFixed(2)}</p></div>
+    ${k.sonuclar.map((s,ix)=>s.gecti?tarifKarti(s,ix):`<div class="kart"><h3>${esc(s.yontem)}</h3>
+        <div class="denetim kaldi">${t("uretilemedi")}</div>
+        <details><summary>${t("neden")}</summary><pre>${esc([s.hata,...(s.kod||[]),...(s.denetciSorun||[])].filter(Boolean).join("\n"))}</pre></details></div>`).join("")}
+    <p class="dipnot">${t("dipTarif")}</p>`;
 }
 function tarifKarti(s,ix){
   const r=s.tarif, grup=g=>r.malzemeler.filter(m=>m.kaynak===g);
   const liste=l=>l.map(m=>`<li>${esc(m.ad)}${m.miktar?` — ${esc(m.miktar)}`:""}</li>`).join("");
   const p = UI.pisirilen[ix];
   return `<div class="kart tarif"><h3>${esc(r.ad)}</h3>
-    <div class="meta">${esc(r.yontem||YONTEMLER[ix])} · ${esc(r.kisi)} kişi · Hazırlık ${esc(r.hazirlik_dk)} dk · Pişirme ${esc(r.pisirme_dk)} dk</div>
-    <div>${(r.oncelikli_kullanilan||[]).map(x=>`<span class="etiket" style="background:var(--kirmizi-bg);color:var(--kirmizi)">Kurtarılıyor: ${esc(x)}</span>`).join("")}</div>
-    <p><b>Neden bu tarif?</b> ${esc(r.gerekce)}</p>
-    ${grup("dolap").length?`<b>Dolabından</b><ul class="malz">${liste(grup("dolap"))}</ul>`:""}
-    ${grup("kiler").length?`<b>Kilerden</b><ul class="malz">${liste(grup("kiler"))}</ul>`:""}
-    ${grup("ek").length?`<b>Almanız gerekebilir</b><ul class="malz">${liste(grup("ek"))}</ul>`:""}
-    <b>Yapılışı</b><ol>${r.adimlar.map(a=>`<li>${esc(a)}</li>`).join("")}</ol>
-    <div class="denetim">Kod kontrolü ve yapay zekâ denetimi geçti${s.deneme>1?` (ilk denemedeki sorunlar düzeltildi, ${s.deneme}. deneme)`:""}.</div>
-    <details><summary>Denetim ayrıntısı</summary><pre>${esc([...(s.onceki?["İlk denemede bulunan sorunlar:",...s.onceki,""]:[]),...((s.denetci?.kontroller)||[]).map(k=>`${k.kod} ${k.sonuc}${k.kanit?" — "+k.kanit:""}`)].join("\n"))}</pre></details>
-    <div style="margin-top:10px">${!p?`<button data-act="pisirdim" data-i="${ix}">Bu tarifi pişirdim</button>`:
-      p==="sor"?`<p><b>Porsiyon nasıldı?</b></p><div class="satir"><button data-act="geri" data-i="${ix}" data-v="tam">Tam yetti</button><button data-act="geri" data-i="${ix}" data-v="artti">Arttı</button><button data-act="geri" data-i="${ix}" data-v="yetmedi">Yetmedi</button></div>
-        <div style="margin-top:8px"><button class="kucuk" data-act="dus" data-i="${ix}">Kullanılan ürünleri dolaptan düş</button></div>`:
+    <div class="meta">${esc(s.yontem)} · ${esc(r.kisi)} ${t("kisiKisa")} · ${t("hazirlik")} ${esc(r.hazirlik_dk)} ${t("dk")} · ${t("pisirme")} ${esc(r.pisirme_dk)} ${t("dk")}</div>
+    <div>${(r.oncelikli_kullanilan||[]).map(x=>`<span class="etiket" style="background:var(--kirmizi-bg);color:var(--kirmizi)">${t("kurtariliyor")} ${esc(x)}</span>`).join("")}</div>
+    <p><b>${t("nedenTarif")}</b> ${esc(r.gerekce)}</p>
+    ${grup("dolap").length?`<b>${t("dolabindan")}</b><ul class="malz">${liste(grup("dolap"))}</ul>`:""}
+    ${grup("kiler").length?`<b>${t("kilerden")}</b><ul class="malz">${liste(grup("kiler"))}</ul>`:""}
+    ${grup("ek").length?`<b>${t("almaniz")}</b><ul class="malz">${liste(grup("ek"))}</ul>`:""}
+    <b>${t("yapilis")}</b><ol>${r.adimlar.map(a=>`<li>${esc(a)}</li>`).join("")}</ol>
+    <div class="denetim">${t("denGecti")}${s.deneme>1?t("denDuzeltildi",s.deneme):""}.</div>
+    <details><summary>${t("denAyrinti")}</summary><pre>${esc([...(s.onceki?[t("ilkSorun"),...s.onceki,""]:[]),...((s.denetci?.kontroller)||[]).map(k=>`${k.kod} ${k.sonuc}${k.kanit?" — "+k.kanit:""}`)].join("\n"))}</pre></details>
+    <div style="margin-top:10px">${!p?`<button data-act="pisirdim" data-i="${ix}">${t("pisirdim")}</button>`:
+      p==="sor"?`<p><b>${t("porsiyon")}</b></p><div class="satir"><button data-act="geri" data-i="${ix}" data-v="tam">${t("tam")}</button><button data-act="geri" data-i="${ix}" data-v="artti">${t("artti")}</button><button data-act="geri" data-i="${ix}" data-v="yetmedi">${t("yetmedi")}</button></div>
+        <div style="margin-top:8px"><button class="kucuk" data-act="dus" data-i="${ix}">${t("dus")}</button></div>`:
       `<p class="bilgi">${esc(p)}</p>`}</div></div>`;
 }
 function vLog(){
-  return `<div class="kart"><h2>Prompt günlüğü</h2><p class="alt">Her yapay zekâ çağrısı amacı, tekniği, prompt metni ve gerçek çıktısıyla kaydedilir. Notlar alanına test sonucunu ve yaptığınız iyileştirmeyi yazın; rapor için dışa aktarın.</p>
-      <div class="satir"><button data-act="logDisa">JSON olarak göster</button><button data-act="logSil">Günlüğü temizle</button></div>
-      <div id="logDisa"></div></div>
-    ${S.log.length?S.log.map(l=>`<div class="kart"><h3>${esc(l.amac)}</h3><div class="meta">${esc(l.zaman)} · ${esc(l.sure)} sn</div>
-      <p style="font-size:14px"><b>Teknik:</b> ${esc(l.teknik)}</p>
-      <details><summary>Sistem promptu</summary><pre>${esc(l.system)}</pre></details>
-      <details><summary>Kullanıcı promptu</summary><pre>${esc(l.prompt)}</pre></details>
-      <details><summary>Model çıktısı</summary><pre>${esc(l.cikti)}</pre></details>
-      <label>Test notu ve iyileştirme</label><textarea rows="2" data-log="${l.id}">${esc(l.not)}</textarea></div>`).join(""):`<div class="kart"><p class="alt">Henüz çağrı yok. Fotoğraftan ekleme veya “Elimdekileri Kurtar” kullanıldığında burada görünür.</p></div>`}`;
+  return `<div class="kart"><h2>${t("logBaslik")}</h2><p class="alt">${t("logAlt")}</p>
+      <div class="satir"><button data-act="logDisa">${t("logJson")}</button><button data-act="logSil">${t("logTemizle")}</button></div><div id="logDisa"></div></div>
+    ${S.log.length?S.log.map(l=>`<div class="kart"><h3>${esc(l.amac)}</h3><div class="meta">${esc(l.zaman)} · ${esc(l.sure)} ${t("sn")}</div>
+      <p style="font-size:14px"><b>${t("teknik")}</b> ${esc(l.teknik)}</p>
+      <details><summary>${t("sistem")}</summary><pre>${esc(l.system)}</pre></details>
+      <details><summary>${t("kullanici")}</summary><pre>${esc(l.prompt)}</pre></details>
+      <details><summary>${t("cikti")}</summary><pre>${esc(l.cikti)}</pre></details>
+      <label>${t("logNot")}</label><textarea rows="2" data-log="${l.id}">${esc(l.not)}</textarea></div>`).join(""):`<div class="kart"><p class="alt">${t("logBos")}</p></div>`}`;
 }
 function render(){
-  const sekmeler=[["dolap","Dolabım"],["ekle","Ekle"],["kurtar","Kurtar"],["log","Promptlar"]];
+  document.documentElement.lang = LANG;
+  const sek=[["dolap","tabDolap"],["ekle","tabEkle"],["kurtar","tabKurtar"],["log","tabLog"]];
   const acilSay = sirali().filter(x=>x.du.renk==="kirmizi").length;
-  document.getElementById("nav").innerHTML = sekmeler.map(([k,a])=>`<button data-act="tab" data-t="${k}" aria-current="${UI.tab===k}">${a}${k==="dolap"&&acilSay?`<span class="rozet">${acilSay}</span>`:""}${k==="ekle"&&S.bekleyen.length?`<span class="rozet">${S.bekleyen.length}</span>`:""}</button>`).join("");
+  document.getElementById("nav").innerHTML = sek.map(([k,a])=>`<button data-act="tab" data-t="${k}" aria-current="${UI.tab===k}">${t(a)}${k==="dolap"&&acilSay?`<span class="rozet">${acilSay}</span>`:""}${k==="ekle"&&S.bekleyen.length?`<span class="rozet">${S.bekleyen.length}</span>`:""}</button>`).join("");
   const govde = {dolap:vDolap,ekle:vEkle,kurtar:vKurtar,log:vLog}[UI.tab]();
-  document.getElementById("app").innerHTML = `<header><h1>SonKullan+</h1><span class="alt">Önce bozulacak olanı kurtar</span></header>
-    ${yzDurum==="yok"?`<p class="uyari">Yapay zekâ özellikleri (fotoğraf okuma, konuşma ve tarifler) yalnızca uygulama claude.ai bağlantısından açıldığında çalışır. Elle ekleme ve dolap takibi yine de çalışır.</p>`:""}${govde}`;
+  document.getElementById("app").innerHTML = `<header><div><h1>SonKullan+</h1><span class="alt">${t("slogan")}</span></div>
+    <div class="dil" role="group" aria-label="Language"><button data-act="dil" data-l="tr" aria-pressed="${LANG==="tr"}">TR</button><button data-act="dil" data-l="en" aria-pressed="${LANG==="en"}">EN</button></div></header>${govde}`;
 }
 
 /* ===================== OLAYLAR ===================== */
-document.addEventListener("click", async e=>{
+document.addEventListener("click", e=>{
   const b = e.target.closest("[data-act]"); if(!b) return;
   const a = b.dataset.act;
   if(a==="tab"){ UI.tab=b.dataset.t; render(); window.scrollTo(0,0); }
+  else if(a==="dil") dilDegistir(b.dataset.l);
   else if(a==="demo") demoYukle();
   else if(a==="sil"){ S.items=S.items.filter(i=>i.id!==b.dataset.id); kaydet(); render(); }
   else if(a==="kullandim"){ const it=S.items.find(i=>i.id===b.dataset.id); if(it) it.durum="kullanildi"; kaydet(); render(); }
   else if(a==="kontrol"){ const it=S.items.find(i=>i.id===b.dataset.id); if(it) it.kontrol=b.checked; kaydet(); render(); }
-  else if(a==="hepsiniSil"){ if(confirm("Dolaptaki tüm ürünler silinsin mi?")){ S.items=[]; kaydet(); render(); } }
+  else if(a==="hepsiniSil"){ if(confirm(t("cTemizle"))){ S.items=[]; kaydet(); render(); } }
   else if(a==="dosya"){ document.getElementById("dosya-"+b.dataset.t).click(); }
   else if(a==="sesli") sesliIsle();
   else if(a==="manuel"){
-    const ad=document.getElementById("m-ad").value.trim(); if(!ad){ alert("Ürün adını yaz."); return; }
+    const ad=document.getElementById("m-ad").value.trim(); if(!ad){ alert(t("aAdYaz")); return; }
     const tur=document.getElementById("m-tur").value, tarih=document.getElementById("m-tarih").value;
-    if(tur!=="YOK" && !tarih){ alert("STT veya TETT seçtiysen etiketteki tarihi de gir."); return; }
+    if(tur!=="YOK" && !tarih){ alert(t("aSTTTarih")); return; }
     S.items.push(kalemOlustur({ad,kategori:document.getElementById("m-kat").value,miktar:document.getElementById("m-mik").value,birim:document.getElementById("m-bir").value,alis:document.getElementById("m-alis").value||bugun(),tur,tarih,giris:"manuel"}));
     kaydet(); UI.tab="dolap"; render();
   }
   else if(a==="onayla"){
-    const kartlar=[...document.querySelectorAll("[data-onay]")], yeni=[];
-    for(const k of kartlar){
+    const yeni=[];
+    for(const k of document.querySelectorAll("[data-onay]")){
       if(!k.querySelector(".o-ekle").checked) continue;
-      const dog=k.querySelector(".o-dog"); const ad=k.querySelector(".o-ad").value.trim();
-      if(dog && !dog.checked){ alert(`“${ad||"Bir ürün"}” düşük güvenle okundu. Kontrol edip “Doğruladım” kutusunu işaretle ya da “Dolaba ekle” işaretini kaldır.`); return; }
+      const dog=k.querySelector(".o-dog"), ad=k.querySelector(".o-ad").value.trim();
+      if(dog && !dog.checked){ alert(t("aDogrula",ad||"?")); return; }
       const tur=k.querySelector(".o-tur").value, tarih=k.querySelector(".o-tarih").value;
-      if(!ad){ alert("Ürün adı boş olamaz."); return; }
-      if(tur!=="YOK" && !tarih){ alert(`“${ad}” için STT/TETT seçildi ama tarih yok.`); return; }
+      if(!ad){ alert(t("aAdBos")); return; }
+      if(tur!=="YOK" && !tarih){ alert(t("aTarihYok",ad)); return; }
       yeni.push(kalemOlustur({ad,kategori:k.querySelector(".o-kat").value,miktar:k.querySelector(".o-mik").value,birim:k.querySelector(".o-bir").value,alis:k.querySelector(".o-alis").value||bugun(),tur,tarih,giris:S.bekleyen[+k.dataset.onay]?.giris}));
     }
     S.items.push(...yeni); S.bekleyen=[]; kaydet(); UI.tab="dolap"; render();
@@ -657,25 +744,23 @@ document.addEventListener("click", async e=>{
     const v=b.dataset.v, c=S.hane.carpan;
     S.hane.carpan = v==="artti" ? Math.max(0.7,c*0.9) : v==="yetmedi" ? Math.min(1.3,c*1.1) : c;
     S.geri.push({zaman:new Date().toISOString(),tarif:S.sonKurtar?.sonuclar[b.dataset.i]?.tarif?.ad,sonuc:v});
-    UI.pisirilen[b.dataset.i] = `Teşekkürler. Sonraki tariflerde porsiyon çarpanı ${S.hane.carpan.toFixed(2)} olarak kullanılacak.`;
-    kaydet(); render();
+    UI.pisirilen[b.dataset.i] = t("tesekkur",S.hane.carpan.toFixed(2)); kaydet(); render();
   }
   else if(a==="dus"){
     const r=S.sonKurtar?.sonuclar[b.dataset.i]?.tarif; if(!r) return;
     const dusen=[]; aktifUrunler().forEach(it=>{ if(r.malzemeler.some(m=>m.kaynak==="dolap"&&benzer(it.ad,m.ad))){ it.durum="kullanildi"; dusen.push(it.ad);} });
-    UI.pisirilen[b.dataset.i] = dusen.length?`Dolaptan düşüldü: ${dusen.join(", ")}.`:"Eşleşen dolap ürünü bulunamadı.";
-    kaydet(); render();
+    UI.pisirilen[b.dataset.i] = dusen.length?t("dusuldu",dusen.join(", ")):t("eslesmeYok"); kaydet(); render();
   }
   else if(a==="logDisa"){ document.getElementById("logDisa").innerHTML=`<textarea rows="8" style="margin-top:8px" readonly>${esc(JSON.stringify(S.log,null,2))}</textarea>`; }
-  else if(a==="logSil"){ if(confirm("Prompt günlüğü silinsin mi?")){ S.log=[]; kaydet(); render(); } }
+  else if(a==="logSil"){ if(confirm(t("cLog"))){ S.log=[]; kaydet(); render(); } }
 });
 document.addEventListener("keydown", e=>{ const b=e.target.closest(".cip"); if(b && (e.key==="Enter"||e.key===" ")){ e.preventDefault(); b.click(); } });
 document.addEventListener("input", e=>{ if(e.target.id==="ses") UI.sesMetin = e.target.value; });
 document.addEventListener("change", e=>{
-  const t=e.target;
-  if(t.id==="dosya-fis"||t.id==="dosya-ambalaj"){ const f=t.files[0]; if(f) gorselIsle(f, t.id==="dosya-fis"?"fis":"ambalaj"); t.value=""; }
-  else if(t.dataset.log){ const l=S.log.find(x=>x.id===t.dataset.log); if(l){ l.not=t.value; kaydet(); } }
-  else if(t.id==="kiler"){ S.hane.kiler=t.value; kaydet(); }
+  const x=e.target;
+  if(x.id==="dosya-fis"||x.id==="dosya-ambalaj"){ const f=x.files[0]; if(f) gorselIsle(f, x.id==="dosya-fis"?"fis":"ambalaj"); x.value=""; }
+  else if(x.dataset.log){ const l=S.log.find(y=>y.id===x.dataset.log); if(l){ l.not=x.value; kaydet(); } }
+  else if(x.id==="kiler"){ S.hane.kiler=x.value; kaydet(); }
 });
 yukle();
 </script>
