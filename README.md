@@ -8,7 +8,6 @@
 |---|---|
 | **Live app / Canlı uygulama** | https://sonkullan-plus.vercel.app (no login / giriş gerekmez) |
 | **Demo video** | _link will be added / bağlantı eklenecek_ |
-| **Report / Rapor** | [`SonKullan_Rapor_Grup1.pdf`](SonKullan_Rapor_Grup1.pdf) |
 | **Team / Takım** | Grup 1 — Samsung Innovation Campus, “Generative AI for the SDGs” Hackathon (October 2026) |
 
 ---
