@@ -6,9 +6,10 @@
 
 | | |
 |---|---|
-| **Live app / Canlı uygulama** | https://sonkullan-plus.vercel.app (no login / giriş gerekmez) |
-| **Demo video** | _link will be added / bağlantı eklenecek_ |
-| **Team / Takım** | Grup 1 — Samsung Innovation Campus, “Generative AI for the SDGs” Hackathon (October 2026) |
+| **Live app** | https://sonkullan-plus.vercel.app (no login) |
+| **Demo video** | _link will be added |
+| **Project report** | [View PDF](SonKullan_Project_Report_EN.pdf) |
+| **Team** | Grup 1 — Samsung Innovation Campus, “Generative AI for the SDGs” Hackathon (October 2026) |
 
 ---
 
@@ -90,7 +91,7 @@ Shared rules in every prompt: use only what is visible or given, never invent; n
 │   └── ai.js      # Vercel serverless function: forwards prompts to Gemini; keeps the API key server-side
 ├── prompts/       # Development prompts used to build the app (see report, Appendix B)
 ├── README.md
-└──SonKullan_Project_Report_EN.pdf #Project Report
+└── SonKullan_Project_Report_EN.pdf # Project Report
 ```
 
 ### Tech stack
@@ -198,7 +199,7 @@ Her promptta ortak kurallar: yalnızca görüleni/verileni kullan, uydurma; gıd
 │   └── ai.js      # Vercel sunucu fonksiyonu: promptları Gemini'ye iletir; API anahtarını sunucuda tutar
 ├── prompts/       # Uygulamayı geliştirirken kullanılan promptlar (rapor, Ek B)
 ├── README.md
-└──SonKullan_Project_Report_EN.pdf # Proje raporu
+└── SonKullan_Project_Report_EN.pdf # Proje raporu
 ```
 
 ### Kullanılan teknolojiler
