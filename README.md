@@ -89,7 +89,8 @@ Shared rules in every prompt: use only what is visible or given, never invent; n
 ├── api/
 │   └── ai.js      # Vercel serverless function: forwards prompts to Gemini; keeps the API key server-side
 ├── prompts/       # Development prompts used to build the app (see report, Appendix B)
-└── README.md
+├── README.md
+└──SonKullan_Project_Report_EN.pdf #Project Report
 ```
 
 ### Tech stack
@@ -196,7 +197,8 @@ Her promptta ortak kurallar: yalnızca görüleni/verileni kullan, uydurma; gıd
 ├── api/
 │   └── ai.js      # Vercel sunucu fonksiyonu: promptları Gemini'ye iletir; API anahtarını sunucuda tutar
 ├── prompts/       # Uygulamayı geliştirirken kullanılan promptlar (rapor, Ek B)
-└── README.md
+├── README.md
+└──SonKullan_Project_Report_EN.pdf # Proje raporu
 ```
 
 ### Kullanılan teknolojiler
