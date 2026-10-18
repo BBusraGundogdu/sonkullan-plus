@@ -236,3 +236,8 @@ Her promptta ortak kurallar: yalnızca görüleni/verileni kullan, uydurma; gıd
 
 ### Uyarı
 Tarifler ve öneriler yapay zekâ ile üretilir ve hata içerebilir. Tarih bir rehberdir; şüphe duyduğun ürünü tüketme.
+
+
+
+
+AAA
