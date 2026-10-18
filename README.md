@@ -23,7 +23,8 @@ Most recipe apps ask *“What can I cook with what I have?”* SonKullan+ asks a
 **Target users:** students, people living alone and small households (2–4 people), where food is often forgotten, dates are not tracked and new food is bought before existing food is used.
 
 ### SDG connection
-- **SDG 12 – Responsible Consumption and Production, Target 12.3** (reducing food waste at the consumer level). _The official target wording should be verified against the UN SDG indicators site._
+- **SDG 12 – Responsible Consumption and Production, Target 12.3:** “By 2030, halve per capita global food waste at the retail and consumer levels and reduce food losses along production and supply chains, including post-harvest losses.” (UN Türkiye, SDG 12)
+- **Why it matters:** according to UNEP’s *Food Waste Index Report 2024*, 1.05 billion tonnes of food were wasted in 2022; about 60% (631 million tonnes) came from households, and household food waste averaged 79 kg per person per year.
 - **How we measure it:** the **Impact** tab counts real actions in the app: items used/rescued, items thrown away, the rescue rate (used ÷ (used + thrown away)), items rescued through recipes, recipes cooked and portion feedback.
 - We deliberately **do not** show kilograms, money or CO₂ saved, because calculating them reliably needs item weights and verified factors. Estimated figures would be misleading.
 
@@ -73,7 +74,7 @@ Shared rules in every prompt: use only what is visible or given, never invent; n
 - **Hallucination:** extraction prompts forbid guessing; dates are calculated by code; low-confidence readings cannot be added without user verification.
 - **Food safety:** items past their **use-by** date never reach a recipe. Items past **best-before** are used only as side ingredients and only if the user confirms a sensory check. The model may not say food is “safe”, and code also filters such phrases.
 - **Allergens:** checked twice, by a bilingual keyword list in code (with whole-word matching and exceptions such as “eggplant”) and by the AI auditor.
-- **Estimates:** shelf-life values are **sample values, not yet verified** against an official source, and are labelled as such in the app. Estimated times are rounded down with a 15% safety margin.
+- **Estimates:** shelf-life values come from the **FoodSafety.gov Cold Food Storage Chart** (meat, fish, leftovers) and the **NDSU Extension Food Storage Guide** (fruit, vegetables). The lower end of each range is used and then rounded down with a 15% safety margin. Where the source gives no value, no estimate is made. Perishable food is flagged if stored at room temperature (USDA 2-hour rule). Freezer times are for quality.
 - **Privacy:** no accounts, no database; data stays in the user’s browser (localStorage). Photos are sent to Google Gemini to be read; on the free tier, Google may use requests to improve its products (to be verified), so users are warned to cover names or card details on receipts.
 - **Security:** the API key lives only on the server. Free-text inputs are checked for instruction-override attempts, code and unsafe food requests before reaching the AI. Only JPG, PNG and WebP photos are accepted.
 - **Human in the loop:** every AI-read item is confirmed by the user.
@@ -109,13 +110,14 @@ Shared rules in every prompt: use only what is visible or given, never invent; n
 
 ### Limitations
 - Only **3 receipt/package tests** were run; no systematic accuracy measurement yet.
-- Shelf-life and spoilage-sign tables are **unverified sample values**.
+- Spoilage-sign texts are general guidance and have not been matched item by item to a source.
+- Shelf-life sources are US guidance; they have not yet been compared with Turkish (Ministry of Agriculture and Forestry) guidance.
 - The input security filter was tested at code level with simulated model responses.
 - The free tier has usage limits; heavy use may return “limit reached” for a while.
 - Data is per browser; there is no sync between devices.
 
 ### Roadmap
-- Replace sample values with an officially sourced shelf-life table.
+- Compare the shelf-life table with Turkish official storage guidance.
 - Measure reading accuracy with a labelled photo set.
 - Run a multi-week user pilot to measure real waste reduction.
 - Automatic shopping list entries when staples run low.
@@ -135,7 +137,8 @@ SonKullan+, evdeki gıdalardan hangisinin önce bozulacağını belirleyen ve o 
 **Hedef kullanıcı:** öğrenciler, yalnız yaşayanlar ve küçük haneler (2–4 kişi). Bu evlerde ürünler unutulur, tarihler takip edilmez ve eldeki gıda kullanılmadan yenisi alınır.
 
 ### SDG bağlantısı
-- **SDG 12 – Sorumlu Tüketim ve Üretim, alt hedef 12.3** (tüketici düzeyinde gıda israfının azaltılması). _Hedefin resmî metni BM SDG göstergeler sitesinden doğrulanmalıdır._
+- **SDG 12 – Sorumlu Tüketim ve Üretim, alt hedef 12.3:** “2030’a kadar perakende ve tüketici düzeyinde kişi başına küresel gıda israfını yarıya indirmek ve hasat sonrası kayıplar dahil üretim ve tedarik zincirlerindeki gıda kayıplarını azaltmak.” (Resmî İngilizce metin: BM Türkiye, SDG 12 sayfası.)
+- **Neden önemli:** UNEP *Gıda İsrafı Endeksi Raporu 2024*’e göre 2022’de 1,05 milyar ton gıda israf edildi; bunun yaklaşık %60’ı (631 milyon ton) hanelerden geldi ve kişi başı yıllık hane israfı ortalama 79 kg oldu.
 - **Nasıl ölçüyoruz:** **Etki** sekmesi uygulamadaki gerçek işlemleri sayar: kullanılan/kurtarılan ürün, atılan ürün, kurtarma oranı (kullanılan ÷ (kullanılan + atılan)), tariflerle kurtarılan ürün, pişirilen tarif ve porsiyon geri bildirimi.
 - Kilogram, para veya CO₂ tasarrufunu bilerek **göstermiyoruz**; bunları güvenilir biçimde hesaplamak için ürün ağırlığı ve doğrulanmış katsayılar gerekir. Tahmini rakamlar yanıltıcı olurdu.
 
@@ -175,7 +178,7 @@ Her promptta ortak kurallar: yalnızca görüleni/verileni kullan, uydurma; gıd
 - **Hallucination:** Çıkarım promptları tahmin etmeyi yasaklar; tarihler kodla hesaplanır; düşük güvenli okumalar kullanıcı onayı olmadan eklenemez.
 - **Gıda güvenliği:** **Son tüketim tarihi (STT)** geçmiş ürün hiçbir tarife girmez. **Tavsiye edilen tüketim tarihi (TETT)** geçmiş ürün yalnızca kullanıcı duyusal kontrolü onaylarsa ve yalnızca yan malzeme olarak kullanılır. Model “güvenli” diyemez; kod da bu tür ifadeleri eler.
 - **Alerjenler:** İki kez kontrol edilir: koddaki iki dilli kelime listesi (tam kelime eşleşmesi ve “eggplant” gibi istisnalarla) ve yapay zekâ denetçisi.
-- **Tahminler:** Raf ömrü değerleri **örnek değerdir, resmî kaynakla henüz doğrulanmamıştır** ve uygulamada böyle etiketlenmiştir. Tahmini süreler %15 güvenlik payıyla aşağı yuvarlanır.
+- **Tahminler:** Raf ömrü değerleri **FoodSafety.gov Soğuk Gıda Saklama Tablosu** (et, balık, pişmiş yemek) ve **NDSU Extension Food Storage Guide**’dan (meyve, sebze) alınmıştır. Aralığın alt sınırı kullanılır ve %15 güvenlik payıyla aşağı yuvarlanır. Kaynakta değeri olmayan ürünler için tahmin yapılmaz. Oda sıcaklığında saklanan bozulabilir gıdalar için uyarı verilir (USDA 2 saat kuralı). Dondurucu süreleri kaliteye yöneliktir.
 - **Gizlilik:** Hesap ve veritabanı yoktur; veriler kullanıcının tarayıcısında (localStorage) kalır. Fotoğraflar okunmak üzere Google Gemini’ye gönderilir; ücretsiz katmanda Google’ın istekleri ürünlerini geliştirmede kullanabileceği bildirilmektedir (doğrulanmalı). Bu yüzden kullanıcı, fişteki ad veya kart bilgisini kapatması için uyarılır.
 - **Güvenlik:** API anahtarı yalnızca sunucudadır. Serbest metinler yapay zekâya gitmeden talimat değiştirme girişimi, kod ve güvensiz gıda isteği desenlerine karşı kontrol edilir. Yalnızca JPG, PNG ve WebP fotoğraf kabul edilir.
 - **İnsan denetimi:** Yapay zekânın okuduğu her ürünü kullanıcı onaylar.
@@ -211,13 +214,14 @@ Her promptta ortak kurallar: yalnızca görüleni/verileni kullan, uydurma; gıd
 
 ### Sınırlılıklar
 - Yalnızca **3 fiş/ambalaj denemesi** yapıldı; sistematik doğruluk ölçümü henüz yok.
-- Raf ömrü ve bozulma belirtisi tabloları **doğrulanmamış örnek değerlerdir**.
+- Bozulma belirtisi metinleri genel rehberdir; ürün ürün kaynakla eşleştirilmedi.
+- Raf ömrü kaynakları ABD rehberleridir; Türkiye’nin (Tarım ve Orman Bakanlığı) rehberleriyle henüz karşılaştırılmadı.
 - Girdi güvenlik filtresi, sahte model yanıtlarıyla kod düzeyinde test edildi.
 - Ücretsiz katmanın kullanım sınırı vardır; yoğun kullanımda bir süre “sınıra ulaşıldı” hatası gelebilir.
 - Veriler tarayıcı başınadır; cihazlar arasında eşitleme yoktur.
 
 ### Yol haritası
-- Örnek değerlerin yerine resmî kaynaklı raf ömrü tablosu.
+- Raf ömrü tablosunun Türkiye’deki resmî saklama rehberleriyle karşılaştırılması.
 - Etiketli fotoğraf setiyle okuma doğruluğunun ölçülmesi.
 - Gerçek israf azalmasını ölçmek için birkaç haftalık kullanıcı pilotu.
 - Temel ürünler azalınca alışveriş listesine otomatik ekleme.

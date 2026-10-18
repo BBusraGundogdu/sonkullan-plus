@@ -115,8 +115,8 @@ const TX = {
   slogan:"Önce bozulacak olanı kurtar", tabDolap:"Dolabım", tabEkle:"Ekle", tabKurtar:"Kurtar", tabLog:"Promptlar",
   bos:"Dolabın boş", bosAlt:"Fiş veya ambalaj fotoğrafıyla, konuşarak ya da elle ürün ekleyerek başla.", urunEkle:"Ürün ekle", demoYukle:"Demo ürünlerini yükle", demoYeniden:"Demo ürünlerini yeniden yükle", dolapTemizle:"Dolabı temizle",
   acil:n=>`Bugün ${n} ürün acil:`, kurtarBtn:"Elimdekileri Kurtar", ozK:"0–1 gün", ozS:"2–3 gün", ozY:"Daha uzun", ozG:"Kontrol",
-  dipDolap:k=>`“Etiket tarihi” ambalajdan okunan ve senin onayladığın tarihtir. “Tahmini” tarih, alış tarihine referans tablodaki süre eklenerek kodla hesaplanır; kesin değildir. Tablo değerleri şu an örnek değerdir (${k}).`,
-  kaynakNotu:"Örnek değer — kaynakla doğrulanmadı", etSTT:"Etiket tarihi · STT", etTETT:"Etiket tarihi · TETT", etTablo:"Tahmini · referans tablo", etYok:"Tarih yok", etDemo:"Demo verisi",
+  dipDolap:k=>`“Etiket tarihi” ambalajdan okunan ve senin onayladığın tarihtir. “Tahmini” tarih, alış tarihine referans tablodaki süre eklenerek kodla hesaplanır; kesin değildir. ${k}`,
+  kaynakNotu:"Kaynak: FoodSafety.gov Soğuk Gıda Saklama Tablosu (et, balık, pişmiş yemek) ve NDSU Extension Food Storage Guide (meyve, sebze); aralığın alt sınırı kullanılır. Kaynakta değeri olmayan ürünler için tahmin yapılmaz. Dondurucu süreleri kaliteye yöneliktir.", etSTT:"Etiket tarihi · STT", etTETT:"Etiket tarihi · TETT", etTablo:"Tahmini · referans tablo", etYok:"Tarih yok", etDemo:"Demo verisi",
   alis:"Alış", takip:"Takip", sttUyari:"Son tüketim tarihi geçmiş. Tarife dahil edilmez; tüketmeyin ve yerel atık kurallarına göre atın.",
   kontrolEttim:"Koku, görünüm ve dokusunu kontrol ettim; yan malzeme olarak değerlendirilebilir", kontrolNot:"Duyusal kontrol bir güvenlik garantisi değildir. Şüphe duyuyorsan tüketme.",
   kullandim:"Kullandım", sil:"Sil",
@@ -148,9 +148,9 @@ const TX = {
   amFis:"Fişten ürün çıkarımı", amAmb:"Ambalajdan ürün ve tarih çıkarımı", amSes:"Konuşmadan ürün çıkarımı", amTarif:t=>`Tarif üretimi (${t}. tur)`, amDen:t=>`Tarif denetimi (${t}. tur)`,
   vDolapYok:a=>`“${a}” dolap ürünü olarak gösterilmiş ama kullanılabilir ürünler arasında yok.`, vAlerjen:(k,a)=>`Alerjen ihlali: “${k}” (${a}).`, vIst:k=>`İstenmeyen malzeme kullanılmış: “${k}”.`, vDis:(a,n)=>`Dışarıda bırakılan ürün kullanılmış: “${a}” (${n}).`, vIddia:k=>`Gıda güvenliği iddiası içeriyor: “${k}”.`, vCapa:"Öncelikli ürünlerden hiçbiri kullanılmamış.", vFormat:"Çıktı beklenen JSON biçiminde değil.", denYanitYok:"Denetçi bu tarif için yanıt vermedi.", denOnaylamadi:"Denetçi tarifi onaylamadı.",
   saklama:"Saklama yeri", sDolap:"Buzdolabı", sOda:"Oda / kiler", sDondurucu:"Dondurucu",
-  odaUyari:"Bu ürün oda sıcaklığında bekletilmemeli. Hemen buzdolabına koy ya da bugün kullan.",
-  payNot:"Tahmini süreler %15 güvenlik payıyla aşağı yuvarlanır.",
-  belirtiBtn:"Bozulma belirtileri", belirtiOn:"Bunlardan biri bile varsa tüketme. Belirti olmaması güvenli olduğu anlamına gelmez.",
+  odaUyari:"Bu ürün oda sıcaklığında bekletilmemeli: bozulabilir gıdalar oda sıcaklığında 2 saatten fazla kalmamalı (USDA). Hemen buzdolabına koy.",
+  payNot:"Tahmini süreler ayrıca %15 güvenlik payıyla aşağı yuvarlanır (en az 1 gün). Bozulabilir gıdalar oda sıcaklığında 2 saatten fazla bırakılmamalıdır (USDA).",
+  belirtiBtn:"Bozulma belirtileri", belirtiOn:"Bunlardan biri bile varsa tüketme. Belirti olmaması güvenli olduğu anlamına gelmez; bazı zararlı bakteriler koku veya görünümü değiştirmez. Şüphedeysen at.",
   attim:"Attım", tabEtki:"Etki",
   eBaslik:"Etki takibi", eAlt:"Bu sayılar yalnızca uygulamada yaptığın işlemlerden hesaplanır: “Kullandım”, tariften düşme ve “Attım”.",
   eKurtarilan:"Kullanılan / kurtarılan ürün", eAtilan:"Atılan ürün", eOran:"Kurtarma oranı", eTarif:"Tariflerle kurtarılan ürün", ePisen:"Pişirilen tarif", eGeri:"Porsiyon geri bildirimi",
@@ -174,8 +174,8 @@ const TX = {
   slogan:"Rescue what spoils first", tabDolap:"My fridge", tabEkle:"Add", tabKurtar:"Rescue", tabLog:"Prompts",
   bos:"Your fridge is empty", bosAlt:"Start by adding items from a receipt or package photo, by speaking, or by hand.", urunEkle:"Add items", demoYukle:"Load demo items", demoYeniden:"Reload demo items", dolapTemizle:"Clear fridge",
   acil:n=>`${n} item${n>1?"s":""} urgent today:`, kurtarBtn:"Rescue my food", ozK:"0–1 days", ozS:"2–3 days", ozY:"Longer", ozG:"Check",
-  dipDolap:k=>`A “label date” is read from the package and confirmed by you. An “estimated” date is calculated by code from the purchase date plus the reference table; it is not exact. Table values are currently sample values (${k}).`,
-  kaynakNotu:"Sample value — not verified against a source", etSTT:"Label date · use-by", etTETT:"Label date · best before", etTablo:"Estimated · reference table", etYok:"No date", etDemo:"Demo data",
+  dipDolap:k=>`A “label date” is read from the package and confirmed by you. An “estimated” date is calculated by code from the purchase date plus the reference table; it is not exact. ${k}`,
+  kaynakNotu:"Sources: FoodSafety.gov Cold Food Storage Chart (meat, fish, leftovers) and NDSU Extension Food Storage Guide (fruit, vegetables); the lower end of each range is used. No estimate is made where the source gives no value. Freezer times are for quality.", etSTT:"Label date · use-by", etTETT:"Label date · best before", etTablo:"Estimated · reference table", etYok:"No date", etDemo:"Demo data",
   alis:"Bought", takip:"Track until", sttUyari:"Use-by date has passed. It is excluded from recipes; do not eat it and dispose of it according to local waste rules.",
   kontrolEttim:"I checked its smell, look and texture; it may be used as a side ingredient", kontrolNot:"A sensory check is not a safety guarantee. If in doubt, don’t eat it.",
   kullandim:"Used it", sil:"Delete",
@@ -207,9 +207,9 @@ const TX = {
   amFis:"Item extraction from receipt", amAmb:"Item and date extraction from package", amSes:"Item extraction from speech", amTarif:t=>`Recipe generation (round ${t})`, amDen:t=>`Recipe audit (round ${t})`,
   vDolapYok:a=>`“${a}” is marked as a fridge item but isn’t among the usable items.`, vAlerjen:(k,a)=>`Allergen violation: “${k}” (${a}).`, vIst:k=>`Unwanted ingredient used: “${k}”.`, vDis:(a,n)=>`Excluded item used: “${a}” (${n}).`, vIddia:k=>`Contains a food-safety claim: “${k}”.`, vCapa:"None of the priority items was used.", vFormat:"Output is not in the expected JSON format.", denYanitYok:"The auditor gave no answer for this recipe.", denOnaylamadi:"The auditor did not approve the recipe.",
   saklama:"Storage", sDolap:"Fridge", sOda:"Room / pantry", sDondurucu:"Freezer",
-  odaUyari:"This item shouldn’t be kept at room temperature. Put it in the fridge now or use it today.",
-  payNot:"Estimated times are rounded down with a 15% safety margin.",
-  belirtiBtn:"Signs of spoilage", belirtiOn:"If you see even one of these, don’t eat it. No signs does not mean it is safe.",
+  odaUyari:"This item shouldn’t be kept at room temperature: perishable food should not sit out for more than 2 hours (USDA). Put it in the fridge now.",
+  payNot:"Estimated times are also rounded down with a 15% safety margin (at least 1 day). Perishable food should not be left at room temperature for more than 2 hours (USDA).",
+  belirtiBtn:"Signs of spoilage", belirtiOn:"If you see even one of these, don’t eat it. No signs does not mean it is safe; some harmful bacteria don’t change smell or appearance. When in doubt, throw it out.",
   attim:"Threw away", tabEtki:"Impact",
   eBaslik:"Impact tracking", eAlt:"These numbers are calculated only from what you do in the app: “Used it”, removing items after a recipe, and “Threw away”.",
   eKurtarilan:"Items used / rescued", eAtilan:"Items thrown away", eOran:"Rescue rate", eTarif:"Items rescued through recipes", ePisen:"Recipes cooked", eGeri:"Portion feedback",
@@ -249,12 +249,17 @@ const KAT = {
   sarkuteri:{ad:["Şarküteri","Deli meats"],gun:null}, kuru_gida:{ad:["Kuru gıda (makarna, bakliyat…)","Dry goods (pasta, pulses…)"],gun:null},
   konserve:{ad:["Konserve / kavanoz","Canned / jarred"],gun:null}, dondurulmus:{ad:["Dondurulmuş","Frozen"],gun:null}, diger:{ad:["Diğer","Other"],gun:null}
 };
-/* Saklama yerine göre süre (gün): [buzdolabı, oda, dondurucu]. 0 = o koşulda bekletilmemeli.
-   DOĞRULANMALI: örnek değerlerdir; rapordan önce resmi kaynakla (ör. USDA FoodKeeper, Tarım ve Orman Bakanlığı) değiştirilmeli. */
+/* Saklama yerine göre süre (gün): [buzdolabı, oda, dondurucu]. Kaynaktaki aralığın ALT sınırı kullanılır.
+   0    = o koşulda bekletilmemeli (bozulabilir gıdalar oda sıcaklığında 2 saatten fazla kalmamalı: USDA FSIS / FoodSafety.gov).
+   null = kaynakta sayısal değer yok → tahmin YAPILMAZ.
+   Kaynaklar: FoodSafety.gov "Cold Food Storage Chart" (et, tavuk, kıyma, balık, pişmiş yemek);
+   NDSU Extension "Food Storage Guide" FN-579 (meyve ve sebze). Dondurucu süreleri kaliteye yöneliktir;
+   −18 °C'de sürekli tutulan gıda güvenlik açısından süresiz saklanabilir (FoodSafety.gov). */
 const SURE = {
-  tavuk:[1,0,90], kirmizi_et:[2,0,120], kiyma:[1,0,90], balik:[1,0,90], yesil_yaprak:[3,1,180], domates:[4,5,60],
-  kabak_patlican:[4,3,90], biber:[5,3,90], mantar:[3,1,60], kok_sebze:[14,14,180], yumusak_meyve:[3,1,180],
-  sert_meyve:[14,5,180], muz:[4,4,60], ekmek:[3,3,90], pismis_yemek:[3,0,60]
+  tavuk:[1,0,270], kirmizi_et:[3,0,120], kiyma:[1,0,90], balik:[1,0,60],
+  yesil_yaprak:[3,0,240], domates:[1,null,240], kabak_patlican:[2,null,240], biber:[7,null,240], mantar:[1,0,240],
+  kok_sebze:[null,null,null], yumusak_meyve:[2,0,240], sert_meyve:[5,null,240], muz:[null,null,null],
+  ekmek:[null,null,null], pismis_yemek:[3,0,60]
 };
 const SAKLAMA = ["dolap","oda","dondurucu"];
 const GUVENLIK_PAYI = 0.85;   // tahmini sürelere %15 güvenlik payı (yalnızca etiket tarihi olmayanlar)
@@ -386,7 +391,8 @@ function kalemOlustur(d){
   let tarih=null, tur="YOK";
   if((d.tur==="STT"||d.tur==="TETT") && okTarih(d.tarih)){ tarih=d.tarih; tur=d.tur; }
   const sak = SAKLAMA.includes(d.saklama) ? d.saklama : "dolap";
-  if(tur==="YOK" && SURE[d.kategori] && okTarih(d.alis)){ tarih=gunEkle(d.alis, Math.floor(SURE[d.kategori][SAKLAMA.indexOf(sak)]*GUVENLIK_PAYI)); tur="TABLO"; }
+  const g = SURE[d.kategori] ? SURE[d.kategori][SAKLAMA.indexOf(sak)] : null;
+  if(tur==="YOK" && g!=null && okTarih(d.alis)){ tarih=gunEkle(d.alis, g>0 ? Math.max(1,Math.floor(g*GUVENLIK_PAYI)) : 0); tur="TABLO"; }
   return {id:uid(),saklama:sak,ad:String(d.ad).trim(),kategori:d.kategori,miktar:d.miktar??"",birim:d.birim||"",alis:d.alis||bugun(),tarih,tur,onayli:true,kontrol:false,demo:!!d.demo,durum:"aktif",giris:d.giris||"manuel"};
 }
 const aktifUrunler = () => S.items.filter(i=>i.durum==="aktif");
@@ -590,7 +596,7 @@ async function gorselIsle(file, tip){
 function fisSatirlari(j){
   const ft = okTarih(j.fis_tarihi);
   return (j.kalemler||[]).map(k=>{ const kat = KAT[k.kategori] ? k.kategori : "diger"; const n=[];
-    if(!ft) n.push(t("nFisTarih")); if(kat==="diger") n.push(t("nKatBelirsiz")); else if(!SURE[kat]) n.push(t("nPaketli"));
+    if(!ft) n.push(t("nFisTarih")); if(kat==="diger") n.push(t("nKatBelirsiz")); else if(!SURE[kat]||SURE[kat][0]==null) n.push(t("nPaketli"));
     return {uid:uid(),ad:k.urun||k.fis_metni||"",kaynakMetin:k.fis_metni||"",kategori:kat,miktar:k.miktar??"",birim:k.birim||"",alis:ft||bugun(),tarih:"",tur:"YOK",
       guven:(ft && k.guven==="yuksek" && kat!=="diger")?"yuksek":"dusuk", not:n.join(" "), giris:"fis"}; });
 }
@@ -716,7 +722,7 @@ function demoYukle(){
   const d=[
     {ad:E?"Chicken breast":"Tavuk göğsü",kategori:"tavuk",miktar:500,birim:"g",alis:gunEkle(b,-1),tur:"STT",tarih:gunEkle(b,1)},
     {ad:E?"Spinach":"Ispanak",kategori:"yesil_yaprak",miktar:1,birim:E?"bunch":"demet",alis:gunEkle(b,-2),tur:"YOK"},
-    {ad:E?"Tomatoes":"Domates",kategori:"domates",miktar:4,birim:E?"pcs":"adet",alis:gunEkle(b,-2),tur:"YOK",saklama:"oda"},
+    {ad:E?"Tomatoes":"Domates",kategori:"domates",miktar:4,birim:E?"pcs":"adet",alis:gunEkle(b,-1),tur:"YOK"},
     {ad:E?"Zucchini":"Kabak",kategori:"kabak_patlican",miktar:2,birim:E?"pcs":"adet",alis:gunEkle(b,-1),tur:"YOK"},
     {ad:E?"Yogurt":"Yoğurt",kategori:"sut_urunu",miktar:1,birim:"kg",alis:gunEkle(b,-3),tur:"STT",tarih:gunEkle(b,3)},
     {ad:E?"Pasta":"Makarna",kategori:"kuru_gida",miktar:500,birim:"g",alis:gunEkle(b,-20),tur:"TETT",tarih:gunEkle(b,150)},
@@ -770,7 +776,7 @@ function vDolap(){
     <p class="dipnot">${t("dipDolap",esc(t("kaynakNotu")))} ${t("payNot")}</p>
     <div class="satir"><button class="kucuk" data-act="demo">${t("demoYeniden")}</button><button class="kucuk" data-act="hepsiniSil">${t("dolapTemizle")}</button></div>${vAlisveris()}`;
 }
-function katSecenek(sec){ return Object.keys(KAT).map(k=>`<option value="${k}" ${k===sec?"selected":""}>${esc(katAd(k))}${SURE[k]?` (${LANG==="en"?"table":"tablo"}: ${SURE[k][0]} ${LANG==="en"?"d":"gün"})`:""}</option>`).join(""); }
+function katSecenek(sec){ return Object.keys(KAT).map(k=>`<option value="${k}" ${k===sec?"selected":""}>${esc(katAd(k))}${SURE[k]&&SURE[k][0]!=null?` (${LANG==="en"?"table":"tablo"}: ${SURE[k][0]} ${LANG==="en"?"d":"gün"})`:""}</option>`).join(""); }
 function sakSecenek(sec){ return SAKLAMA.map(x=>`<option value="${x}" ${x===(sec||"dolap")?"selected":""}>${t({dolap:"sDolap",oda:"sOda",dondurucu:"sDondurucu"}[x])}</option>`).join(""); }
 function turSecenek(sec,uzun){ return `<option value="YOK" ${sec==="YOK"?"selected":""}>${uzun?t("turYok"):t("turYokKisa")}</option><option value="STT" ${sec==="STT"?"selected":""}>${t("turSTT")}</option><option value="TETT" ${sec==="TETT"?"selected":""}>${t("turTETT")}</option>`; }
 const BIRIMLER = ["adet","g","kg","ml","l","paket"];
@@ -971,7 +977,7 @@ document.addEventListener("click", e=>{
   else if(a==="bekleyenSil"){ S.bekleyen=[]; kaydet(); render(); }
   else if(a==="alerjen"){ const k=b.dataset.k; S.hane.alerjenler = S.hane.alerjenler.includes(k)?S.hane.alerjenler.filter(x=>x!==k):[...S.hane.alerjenler,k]; kaydet(); render(); }
   else if(a==="deg") degerlendir(b.dataset.id);
-  else if(a==="dondurAl"){ const it=S.items.find(i=>i.id===b.dataset.id); if(it && SURE[it.kategori]){ it.saklama="dondurucu"; it.tarih=gunEkle(bugun(),Math.floor(SURE[it.kategori][2]*GUVENLIK_PAYI)); UI.deg[it.id]={hata:null,oneriler:[{tur:"dondur",baslik:t("dondurNot"),adimlar:[]}]}; } kaydet(); render(); }
+  else if(a==="dondurAl"){ const it=S.items.find(i=>i.id===b.dataset.id); if(it && SURE[it.kategori]){ it.saklama="dondurucu"; it.tarih=gunEkle(bugun(),Math.max(1,Math.floor(SURE[it.kategori][2]*GUVENLIK_PAYI))); UI.deg[it.id]={hata:null,oneriler:[{tur:"dondur",baslik:t("dondurNot"),adimlar:[]}]}; } kaydet(); render(); }
   else if(a==="tarifTuru"){ S.hane.tarifTuru=b.dataset.k; kaydet(); render(); }
   else if(a==="carpanSifirla"){ S.hane.carpan=1; kaydet(); render(); }
   else if(a==="kurtar") kurtar();
